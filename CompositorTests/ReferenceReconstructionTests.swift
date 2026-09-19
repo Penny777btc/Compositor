@@ -5,6 +5,25 @@ import UniformTypeIdentifiers
 @testable import Compositor
 
 @MainActor struct ReferenceReconstructionTests {
+    @Test func referenceGuardRejectsTypographyOnlyReconstructionAndBuildsCorrection() {
+        let analysis = AIReferenceAnalysis(summary: "Poster with two product screenshots and a collage landscape",
+            visualStyle: "hand-drawn editorial", palette: ["#FFD75A"],
+            composition: ["two product images"], layerStrategy: ["crown, arrow, screenshots, mountain collage"])
+        let weakPlan = AIEditorPlan(message: "Rebuilt", referenceAnalysis: analysis,
+            actions: [AIEditorAction(type: "add_gradient"), AIEditorAction(type: "add_text"),
+                      AIEditorAction(type: "add_text"), AIEditorAction(type: "add_text")])
+        let reason = AIReferencePlanGuard.revisionReason(for: weakPlan, userText: "模仿这张参考图")
+        #expect(reason != nil)
+        let correction = AIReferencePlanGuard.revisionPrompt(
+            originalPrompt: "original", rejectedPlan: weakPlan, reason: reason ?? "")
+        #expect(correction.contains("extract_reference_region"))
+        #expect(correction.contains("add_path"))
+
+        let strongPlan = AIEditorPlan(message: "Rebuilt", referenceAnalysis: analysis,
+            actions: [AIEditorAction(type: "extract_reference_region"), AIEditorAction(type: "add_path")])
+        #expect(AIReferencePlanGuard.revisionReason(for: strongPlan, userText: "模仿这张参考图") == nil)
+    }
+
     private func png(_ image: CGImage, to url: URL) throws {
         let data = NSMutableData()
         let destination = try #require(CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil))

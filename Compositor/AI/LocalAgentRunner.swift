@@ -200,7 +200,10 @@ nonisolated enum LocalAgentRunner {
         When a reference image is attached, fill `referenceAnalysis` with a concise visual decomposition: overall style,
         palette, composition, and a layer-by-layer reconstruction strategy. Otherwise return null. Rebuild typography,
         shapes, gradients, masks, and layout with native editable actions. Use generated raster layers only for content
-        that genuinely requires new photographic, illustrative, textural, or subject pixels.
+        that genuinely requires new photographic, illustrative, textural, or subject pixels. For reconstruction or
+        imitation requests, every prominent element named in the analysis must have a corresponding action. Never
+        return a typography-and-background-only plan when the reference visibly contains screenshots, images, collage
+        pieces, logos, arrows, crowns, underlines, or other major non-text artwork.
 
         Allowed actions:
         - create_canvas: width and height, only when no canvas exists. A new canvas is transparent; add exactly one
@@ -239,8 +242,8 @@ nonisolated enum LocalAgentRunner {
         - add_mask adds an empty reveal-all or hide-all raster mask; it does not identify or paint a subject.
           group_layers uses exact layerIDs. reorder_layer uses a one-based top-to-bottom position.
         - export_variants contains named width/height variants. The app will ask the user to choose a folder, then save PNG and editable .comp files.
-        - no_action: use when the request needs arbitrary vector paths, shadows, strokes, semantic masking, painting,
-          deletion, or essential details are missing. Explain exactly
+        - no_action: use when the request needs complex Bezier editing, shadows, semantic masking, painting, deletion,
+          or essential details are missing. Explain exactly
           what is not supported yet.
 
         Keep every shape inside the canvas unless the user explicitly asks otherwise. Prefer a small sequence of clear,

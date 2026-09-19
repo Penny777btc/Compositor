@@ -5881,6 +5881,16 @@
         }
       }
     },
+    "The AI analyzed the reference, but its plan still omitted important visual layers. Please try a more specific request.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 已分析参考图，但计划仍遗漏了重要视觉图层。请尝试更明确地描述需要保留的元素。"
+          }
+        }
+      }
+    },
     "Extract Reference Region": {
       "localizations": {
         "zh-Hans": {

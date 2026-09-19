@@ -60,10 +60,22 @@ final class AIChatController {
                     hasReferenceImage: reference != nil, referenceContext: localReference?.promptContext)
                 let scoped = reference?.startAccessingSecurityScopedResource() == true
                 defer { if scoped { reference?.stopAccessingSecurityScopedResource() } }
-                let plan = try await LocalAgentRunner.run(provider: provider, prompt: prompt,
+                var plan = try await LocalAgentRunner.run(provider: provider, prompt: prompt,
                     referenceImage: reference)
                 guard !Task.isCancelled else { return }
                 if reference != nil, plan.referenceAnalysis == nil { throw AIChatError.referenceNotAnalyzed }
+                if reference != nil,
+                   let reason = AIReferencePlanGuard.revisionReason(for: plan, userText: text) {
+                    let revisionPrompt = AIReferencePlanGuard.revisionPrompt(
+                        originalPrompt: prompt, rejectedPlan: plan, reason: reason)
+                    plan = try await LocalAgentRunner.run(provider: provider, prompt: revisionPrompt,
+                        referenceImage: reference)
+                    guard !Task.isCancelled else { return }
+                    if plan.referenceAnalysis == nil { throw AIChatError.referenceNotAnalyzed }
+                    if AIReferencePlanGuard.revisionReason(for: plan, userText: text) != nil {
+                        throw AIChatError.referencePlanIncomplete
+                    }
+                }
                 pendingPlan = plan
                 messages.append(AIChatMessage(role: .assistant, text: plan.message))
             } catch {

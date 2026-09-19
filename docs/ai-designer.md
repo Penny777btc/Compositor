@@ -30,7 +30,7 @@ shapes, and gradients stay separate actions so editable content is not baked int
 
 An `AIImageGenerationProvider` implementation returns encoded image bytes plus its public model identifier and optional
 revised prompt. The pipeline validates media type, encoded size, dimensions, and the 100-megapixel limit before inserting
-the result. A generated layer stores only non-secret provenance in project format version 10; credentials, reference
+the result. A generated layer stores only non-secret provenance in project format version 11; credentials, reference
 bytes, and local paths are never serialized. If no Provider is configured, requests stay pending and no placeholder
 pixels are inserted. The current development build intentionally ships in that state until a Provider and credential
 route are selected.
@@ -38,7 +38,8 @@ route are selected.
 Project format version 11 also stores editable normalized vector paths for AI-authored arrows, crowns, underlines,
 simple torn-paper outlines, and doodles. Reference-image planning is augmented locally with Apple Vision OCR boxes and
 sampled colors. `extract_reference_region` can preserve an exact supplied screenshot, logo, or product region as its own
-raster layer without a generation Provider.
+raster layer without a generation Provider. A reference-fidelity guard rejects text-and-background-only plans when the
+model's own analysis names major raster or hand-drawn elements, then automatically requests one corrected plan.
 
 ## Capability contract
 
@@ -64,5 +65,5 @@ the file the user selected.
   provenance framework is present
 - adjustment commands create editable defaults; exact numerical exposure, levels, curves, grain, and gradient-map
   parameters still require their existing editor panels
-- arbitrary vector paths, strokes, shadows, semantic masks, painting, and deletion are not exposed to AI yet
+- complex Bezier-node editing, shadows, semantic masks, painting, and deletion are not exposed to AI yet
 - a production sandboxed release still needs a separately signed local AI bridge instead of launching CLIs directly

@@ -96,6 +96,7 @@ nonisolated enum AIChatError: LocalizedError {
     case failed(String)
     case invalidResponse
     case referenceNotAnalyzed
+    case referencePlanIncomplete
 
     var errorDescription: String? {
         switch self {
@@ -105,6 +106,7 @@ nonisolated enum AIChatError: LocalizedError {
         case .failed(let message): return message
         case .invalidResponse: return L10n.text("The AI returned a response that could not be understood.")
         case .referenceNotAnalyzed: return L10n.text("The reference image was attached, but the AI did not return a visual analysis. Please try again.")
+        case .referencePlanIncomplete: return L10n.text("The AI analyzed the reference, but its plan still omitted important visual layers. Please try a more specific request.")
         }
     }
 }
