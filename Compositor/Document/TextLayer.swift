@@ -16,6 +16,8 @@ nonisolated struct TextLayerStyle: Codable, Equatable, Sendable {
     var boxWidth: CGFloat = 800
     /// Additional spacing between glyphs. Optional keeps version-8...11 projects source-compatible.
     var tracking: CGFloat? = nil
+    /// OCR-matched display text should not wrap merely because font metrics differ slightly.
+    var singleLine: Bool? = nil
     var color: PaletteColor { PaletteColor(red: red, green: green, blue: blue) }
     var isValid: Bool {
         !text.isEmpty && text.utf8.count <= 100_000 && !fontName.isEmpty && fontName.utf8.count <= 1_024
@@ -107,7 +109,7 @@ extension EditorSession {
             candidate.fontSize = size
             let measured = measuredText(candidate, attributed: attributedText(candidate))
             let renderedHeight = measured.height + size * 0.2
-            if renderedHeight <= targetHeight {
+            if renderedHeight <= targetHeight && measured.width <= candidate.boxWidth {
                 best = size
                 low = size
             } else { high = size }
@@ -121,7 +123,7 @@ extension EditorSession {
         let font = NSFont(name: style.fontName, size: style.fontSize) ?? .systemFont(ofSize: style.fontSize)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = style.alignment == .center ? .center : style.alignment == .right ? .right : .left
-        paragraph.lineBreakMode = .byWordWrapping
+        paragraph.lineBreakMode = style.singleLine == true ? .byClipping : .byWordWrapping
         return NSAttributedString(string: style.text, attributes: [
             .font: font,
             .foregroundColor: NSColor(srgbRed: style.red, green: style.green, blue: style.blue, alpha: 1),
@@ -131,22 +133,25 @@ extension EditorSession {
     }
 
     private static func measuredText(_ style: TextLayerStyle, attributed: NSAttributedString) -> CGRect {
-        attributed.boundingRect(with: CGSize(width: style.boxWidth, height: 30_000),
+        let width = style.singleLine == true ? 30_000 : style.boxWidth
+        return attributed.boundingRect(with: CGSize(width: width, height: 30_000),
             options: [.usesLineFragmentOrigin, .usesFontLeading])
     }
 }
 
 @MainActor
 enum InstalledFontResolver {
-    static func resolve(_ requested: String?, weight: String?, text: String) -> String {
+    static func resolve(_ requested: String?, weight: String?, category: String?, text: String) -> String {
         let fallbackFamily = text.unicodeScalars.contains(where: { $0.value >= 0x2E80 }) ? "PingFang SC" : "Helvetica Neue"
         let requested = requested?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let family = requested.flatMap { name in
+        let explicitFamily = requested.flatMap { name in
             NSFont(name: name, size: 12)?.familyName
                 ?? NSFontManager.shared.availableFontFamilies.first(where: {
                     $0.localizedCaseInsensitiveCompare(name) == .orderedSame
                 })
-        } ?? fallbackFamily
+        }
+        let preferred = preferredFamilies(category: category, text: text)
+        let family = preferred.first(where: { familySupports($0, text: text) }) ?? explicitFamily ?? fallbackFamily
         let members = NSFontManager.shared.availableMembers(ofFontFamily: family) ?? []
         guard !members.isEmpty else { return requested ?? fallbackFamily }
         if weight == nil, let requested,
@@ -166,6 +171,35 @@ enum InstalledFontResolver {
         }.min {
             ($0.distance, $0.regularPenalty, $0.name) < ($1.distance, $1.regularPenalty, $1.name)
         }?.name ?? requested ?? family
+    }
+
+    private static func preferredFamilies(category: String?, text: String) -> [String] {
+        let containsCJK = text.unicodeScalars.contains(where: { $0.value >= 0x2E80 })
+        let requested: [String] = switch category?.lowercased() {
+        case "handwritten": containsCJK
+            ? ["Kaiti SC", "STKaiti", "Xingkai SC", "HanziPen SC"]
+            : ["Noteworthy", "Bradley Hand", "Marker Felt", "Chalkboard", "Snell Roundhand"]
+        case "serif": containsCJK ? ["Songti SC", "STSong"] : ["New York", "Georgia", "Times New Roman"]
+        case "condensed": ["Avenir Next Condensed", "Arial Narrow", "Helvetica Neue"]
+        case "rounded": containsCJK ? ["Yuanti SC", "Hiragino Maru Gothic ProN"]
+            : ["Arial Rounded MT Bold", "SF Pro Rounded", "Avenir Next"]
+        case "monospaced": ["Menlo", "SF Mono", "Monaco"]
+        case "sans": containsCJK ? ["PingFang SC", "Heiti SC"] : ["Helvetica Neue", "Arial"]
+        default: []
+        }
+        let available = NSFontManager.shared.availableFontFamilies
+        return requested.compactMap { candidate in
+            available.first(where: { $0.localizedCaseInsensitiveCompare(candidate) == .orderedSame })
+        }
+    }
+
+    private static func familySupports(_ family: String, text: String) -> Bool {
+        guard let face = NSFontManager.shared.availableMembers(ofFontFamily: family)?.first?.first as? String,
+              let font = NSFont(name: face, size: 12) else { return false }
+        return text.unicodeScalars.allSatisfy { scalar in
+            CharacterSet.whitespacesAndNewlines.contains(scalar)
+                || font.coveredCharacterSet.contains(scalar)
+        }
     }
 }
 

@@ -286,13 +286,14 @@ enum AIEditorEngine {
         let align = action.alignment.flatMap(TextLayerAlignment.init(rawValue:)) ?? base.alignment
         let text = action.text ?? fallbackText
         let font = InstalledFontResolver.resolve(action.fontName ?? (fallback == nil ? nil : base.fontName),
-            weight: action.fontWeight, text: text)
+            weight: action.fontWeight, category: action.fontCategory, text: text)
         var style = TextLayerStyle(text: text,
             fontName: font,
             fontSize: finite(action.fontSize) ?? base.fontSize,
             red: rgb.red, green: rgb.green, blue: rgb.blue,
             alignment: align, boxWidth: finite(action.width) ?? base.boxWidth,
-            tracking: finite(action.tracking) ?? base.tracking)
+            tracking: finite(action.tracking) ?? base.tracking,
+            singleLine: action.singleLine ?? base.singleLine)
         guard style.isValid else { throw CommandError.invalidValue }
         if action.fitText == true {
             style = try EditorSession.fitTextStyle(style, targetHeight: try positive(action.height))

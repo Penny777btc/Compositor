@@ -15,6 +15,10 @@ nonisolated enum AIReferencePlanGuard {
         "arrow", "crown", "underline", "doodle", "hand-drawn", "scribble", "stroke",
         "箭头", "皇冠", "下划线", "涂鸦", "手绘", "线条"
     ]
+    private static let handwritingCues = [
+        "handwritten", "handwriting", "script lettering", "handwritten note",
+        "手写文字", "手写便签", "手写文案", "手写体"
+    ]
 
     static func revisionReason(for plan: AIEditorPlan, userText: String) -> String? {
         let request = userText.lowercased()
@@ -33,6 +37,19 @@ nonisolated enum AIReferencePlanGuard {
         }
         if pathCues.contains(where: strategy.contains), !hasPathAction {
             issues.append("the analysis names hand-drawn or line artwork but the actions never create an editable path")
+        }
+        if handwritingCues.contains(where: strategy.contains) {
+            let usesHandwrittenFace = plan.actions.contains {
+                $0.type == "add_text" && $0.fontCategory?.lowercased() == "handwritten"
+            }
+            let extractsLettering = plan.actions.contains { action in
+                guard action.type == "extract_reference_region" else { return false }
+                let label = (action.name ?? "").lowercased()
+                return ["note", "hand", "script", "便签", "手写", "字样"].contains(where: label.contains)
+            }
+            if !usesHandwrittenFace, !extractsLettering {
+                issues.append("the analysis names handwritten lettering but no exact lettering region or handwritten font is used")
+            }
         }
         let editableTextCount = plan.actions.filter { ["add_text", "edit_text"].contains($0.type) }.count
         let hasVisualReconstruction = hasRasterAction || hasPathAction || types.contains("add_shape")
@@ -55,7 +72,8 @@ nonisolated enum AIReferencePlanGuard {
         actual action. For exact supplied screenshots, logos, product images, or collage pieces, use
         extract_reference_region with measured source pixel rectangles and individual target frames. Do not extract the
         whole poster as one flattened layer. For paper strips use add_torn_paper; for arrows, crowns, underlines, and
-        doodles, use add_path. Use generate_image
+        doodles, use add_path. For handwritten lettering, either extract that exact supplied region with a semantic name
+        such as Handwritten Note or use add_text with fontCategory=handwritten. Use generate_image
         only for genuinely missing pixels that cannot be extracted from the supplied reference. Keep all typography as
         native editable text. A reference reconstruction may not be a text-and-background-only plan when the reference
         visibly contains other major elements.

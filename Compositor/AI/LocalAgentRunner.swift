@@ -41,8 +41,10 @@ nonisolated enum LocalAgentRunner {
               "fontName": { "type": ["string", "null"] },
               "fontSize": { "type": ["number", "null"] },
               "fontWeight": { "type": ["string", "null"], "enum": ["regular", "medium", "semibold", "bold", "heavy", "black", null] },
+              "fontCategory": { "type": ["string", "null"], "enum": ["sans", "serif", "condensed", "rounded", "handwritten", "monospaced", null] },
               "tracking": { "type": ["number", "null"] },
               "fitText": { "type": ["boolean", "null"] },
+              "singleLine": { "type": ["boolean", "null"] },
               "alignment": { "type": ["string", "null"], "enum": ["left", "center", "right", null] },
               "adjustment": { "type": ["string", "null"], "enum": ["hue_saturation", "levels", "curves", "exposure", "gradient_map", "grain", null] },
               "mask": { "type": ["string", "null"], "enum": ["reveal", "hide", null] },
@@ -81,7 +83,7 @@ nonisolated enum LocalAgentRunner {
               "visible": { "type": ["boolean", "null"] },
               "cornerRadius": { "type": ["number", "null"] }
             },
-            "required": ["type", "layerID", "layerIDs", "name", "prompt", "text", "fontName", "fontSize", "fontWeight", "tracking", "fitText", "alignment", "adjustment", "mask", "position", "variants", "shape", "imageRole", "referenceMode", "imageBackground", "imageQuality", "gradient", "colors", "locations", "angle", "centerX", "centerY", "color", "width", "height", "x", "y", "sourceX", "sourceY", "sourceWidth", "sourceHeight", "points", "strokeColor", "fillColor", "lineWidth", "closed", "roughness", "seed", "intensity", "rotation", "opacity", "visible", "cornerRadius"]
+            "required": ["type", "layerID", "layerIDs", "name", "prompt", "text", "fontName", "fontSize", "fontWeight", "fontCategory", "tracking", "fitText", "singleLine", "alignment", "adjustment", "mask", "position", "variants", "shape", "imageRole", "referenceMode", "imageBackground", "imageQuality", "gradient", "colors", "locations", "angle", "centerX", "centerY", "color", "width", "height", "x", "y", "sourceX", "sourceY", "sourceWidth", "sourceHeight", "points", "strokeColor", "fillColor", "lineWidth", "closed", "roughness", "seed", "intensity", "rotation", "opacity", "visible", "cornerRadius"]
           }
         }
       },
@@ -251,10 +253,12 @@ nonisolated enum LocalAgentRunner {
           Linear gradients use `angle` in degrees (0 is left-to-right); radial gradients use centerX/centerY from 0...1.
         - edit_gradient: target an existing editable gradient by exact layerID; omitted gradient properties keep their
           current values. Use this instead of rebuilding an existing gradient.
-        - add_text: text, x/y, box width, fontSize, fontName, fontWeight, tracking, #RRGGBB color, alignment, and optional
-          name. Text remains editable. For reference reconstruction, set height to the measured target box and fitText
-          true so Compositor solves the font size locally. Never invent an obscure font name: use a requested family,
-          PingFang SC for Chinese, Helvetica Neue for Latin text, or null; fontWeight selects the closest installed face.
+        - add_text: text, x/y, box width, fontSize, fontName, fontWeight, fontCategory, tracking, #RRGGBB color,
+          alignment, and optional name. Text remains editable. For a measured one-line reference label set height,
+          fitText=true, and singleLine=true so Compositor solves both width and height locally. fontCategory is sans,
+          serif, condensed, rounded, handwritten, or monospaced. For handwriting, either use handwritten or extract the
+          exact supplied lettering in High Fidelity mode. Never invent an obscure font name: use a requested family,
+          PingFang SC for Chinese, Helvetica Neue for Latin text, or null; the app resolves an installed face.
         - edit_text: target an existing editable text layer by layerID. Use fontSize and box width for typography;
           do not use transform_layer merely to change a text font size.
         - extract_reference_region: copies an existing rectangular region from the attached reference into its own

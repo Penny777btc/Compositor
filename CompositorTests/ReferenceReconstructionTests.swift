@@ -40,6 +40,38 @@ import UniformTypeIdentifiers
         #expect(abs((result.height ?? 0) - 141.6) < 0.001)
     }
 
+    @Test func duplicateAndCombinedOCRTextUsesThePlannedSpatialRegion() throws {
+        let observations = [
+            AIReferenceTextObservation(text: "Gemini 4 要来了", confidence: 0.98,
+                frame: CGRect(x: 80, y: 300, width: 900, height: 150)),
+            AIReferenceTextObservation(text: "Gemini 4", confidence: 0.99,
+                frame: CGRect(x: 720, y: 820, width: 180, height: 42)),
+        ]
+        let analysis = AIReferenceLocalAnalysis(width: 1080, height: 1440, texts: observations,
+            palette: [], regions: [])
+        var canvas = AIEditorAction(type: "create_canvas"); canvas.width = 1080; canvas.height = 1440
+        var hero = AIEditorAction(type: "add_text"); hero.text = "Gemini 4"; hero.x = 90; hero.y = 300
+        hero.width = 600; hero.height = 160
+        var label = AIEditorAction(type: "add_text"); label.text = "Gemini 4"; label.x = 710; label.y = 810
+        label.width = 200; label.height = 50
+        let refined = AIReferencePlanRefiner.refine(AIEditorPlan(message: "", actions: [canvas, hero, label]),
+            analysis: analysis, existingCanvas: nil, strategy: .fidelity)
+        #expect((refined.actions[1].y ?? 10_000) < 400)
+        #expect((refined.actions[2].y ?? 0) > 750)
+        #expect(refined.actions[1].singleLine == true && refined.actions[2].singleLine == true)
+    }
+
+    @Test func fidelityGuardRequiresAHandwritingTreatment() {
+        let analysis = AIReferenceAnalysis(summary: "Poster", visualStyle: "editorial",
+            palette: [], composition: [], layerStrategy: ["handwritten note in the lower left"])
+        var text = AIEditorAction(type: "add_text"); text.text = "Same idea."
+        let weak = AIEditorPlan(message: "", referenceAnalysis: analysis, actions: [text])
+        #expect(AIReferencePlanGuard.revisionReason(for: weak, userText: "Rebuild this reference image") != nil)
+        text.fontCategory = "handwritten"
+        let treated = AIEditorPlan(message: "", referenceAnalysis: analysis, actions: [text])
+        #expect(AIReferencePlanGuard.revisionReason(for: treated, userText: "Rebuild this reference image") == nil)
+    }
+
     @Test func proceduralPaperAndGrainAreDeterministicEditableLayers() throws {
         let first = ProceduralDesignElements.tornPaperPoints(
             size: CGSize(width: 700, height: 140), roughness: 12, seed: 42)

@@ -50,8 +50,10 @@ nonisolated struct AIEditorAction: Codable, Sendable {
     var fontName: String? = nil
     var fontSize: Double? = nil
     var fontWeight: String? = nil
+    var fontCategory: String? = nil
     var tracking: Double? = nil
     var fitText: Bool? = nil
+    var singleLine: Bool? = nil
     var alignment: String? = nil
     var adjustment: String? = nil
     var mask: String? = nil

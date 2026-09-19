@@ -10,7 +10,8 @@ thread when available, with the restricted one-shot CLI path as a fallback.
 - create a transparent canvas
 - add editable rectangle, rounded-rectangle, and ellipse shape layers
 - add and edit native editable text layers
-- resolve an installed font face by requested weight, apply tracking, and fit reconstructed text to measured OCR bounds
+- resolve an installed font face by requested weight and category (sans, serif, condensed, rounded, handwritten, or
+  monospaced), apply tracking, and fit reconstructed text to measured OCR bounds
 - add and edit smooth linear or radial gradient layers with two to twelve color stops
 - analyze an attached reference into style, palette, composition, and a layer reconstruction strategy
 - detect local OCR boxes plus candidate rectangle/saliency regions with Apple Vision
@@ -47,6 +48,9 @@ High Fidelity, Balanced, and Editable First strategies let the user choose how a
 reused. In High Fidelity and Balanced modes, native OCR-matching text is deterministically aligned and auto-fitted after
 the model plans semantic layers. When no image Provider is configured, reference plans discard `generate_image` actions
 and require extraction or local procedural alternatives instead.
+OCR layout refinement also uses the model's approximate position to disambiguate repeated copy (for example a hero title
+and a smaller column label with the same text), and can split one combined OCR observation across multiple native text
+layers. A handwriting coverage guard requires either exact supplied lettering extraction or an installed script face.
 
 ## Capability contract
 

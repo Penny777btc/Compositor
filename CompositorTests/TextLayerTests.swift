@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Testing
 @testable import Compositor
@@ -31,6 +32,7 @@ import Testing
         session.createDocument(width: 1080, height: 1440)
         var action = AIEditorAction(type: "add_text")
         action.text = "Gemini 4"; action.fontName = "Helvetica Neue"; action.fontWeight = "black"
+        action.fontCategory = "sans"; action.singleLine = true
         action.width = 760; action.height = 150; action.fitText = true; action.tracking = -2
         action.x = 100; action.y = 80; action.color = "#05070A"
         _ = AIEditorEngine.execute(AIEditorPlan(message: "", actions: [action]), in: session)
@@ -38,6 +40,14 @@ import Testing
         #expect(style.fontName.lowercased().contains("black") || style.fontName.lowercased().contains("heavy"))
         #expect(style.tracking == -2 && style.fontSize > 20)
         #expect(session.activeLayer?.transform.size.height ?? 10_000 <= 151)
+    }
+
+    @Test func handwritingCategoryResolvesToAnInstalledScriptFace() {
+        let name = InstalledFontResolver.resolve(nil, weight: "regular", category: "handwritten",
+            text: "What's Next?")
+        let font = NSFont(name: name, size: 24)
+        #expect(font != nil)
+        #expect(font?.familyName != "Helvetica Neue")
     }
 
     @Test func batchVariantsSaveEditableProjectsAndPNGs() async throws {

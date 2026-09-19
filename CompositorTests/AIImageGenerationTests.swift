@@ -102,6 +102,7 @@ import UniformTypeIdentifiers
         #expect(LocalAgentRunner.schema.contains("add_torn_paper"))
         #expect(LocalAgentRunner.schema.contains("add_grain_overlay"))
         #expect(LocalAgentRunner.schema.contains("fontWeight"))
+        #expect(LocalAgentRunner.schema.contains("fontCategory"))
         let prompt = LocalAgentRunner.prompt(userText: "Rebuild this design", history: [], context: "Canvas: none",
             hasReferenceImage: true, referenceStrategy: .fidelity, imageGenerationAvailable: false)
         #expect(prompt.contains("Reference image attached: yes"))
