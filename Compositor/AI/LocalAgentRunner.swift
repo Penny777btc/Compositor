@@ -8,6 +8,23 @@ nonisolated enum LocalAgentRunner {
       "additionalProperties": false,
       "properties": {
         "message": { "type": "string" },
+        "referenceAnalysis": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "summary": { "type": "string" },
+                "visualStyle": { "type": "string" },
+                "palette": { "type": "array", "maxItems": 12, "items": { "type": "string" } },
+                "composition": { "type": "array", "maxItems": 20, "items": { "type": "string" } },
+                "layerStrategy": { "type": "array", "maxItems": 24, "items": { "type": "string" } }
+              },
+              "required": ["summary", "visualStyle", "palette", "composition", "layerStrategy"]
+            }
+          ]
+        },
         "actions": {
           "type": "array",
           "maxItems": 24,
@@ -15,10 +32,11 @@ nonisolated enum LocalAgentRunner {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "type": { "type": "string", "enum": ["create_canvas", "add_shape", "add_gradient", "edit_gradient", "add_text", "edit_text", "rename_layer", "set_opacity", "set_visibility", "transform_layer", "duplicate_layer", "add_adjustment", "add_mask", "group_layers", "reorder_layer", "export_variants", "no_action"] },
+              "type": { "type": "string", "enum": ["create_canvas", "add_shape", "add_gradient", "edit_gradient", "add_text", "edit_text", "generate_image", "rename_layer", "set_opacity", "set_visibility", "transform_layer", "duplicate_layer", "add_adjustment", "add_mask", "group_layers", "reorder_layer", "export_variants", "no_action"] },
               "layerID": { "type": ["string", "null"] },
               "layerIDs": { "type": ["array", "null"], "items": { "type": "string" } },
               "name": { "type": ["string", "null"] },
+              "prompt": { "type": ["string", "null"] },
               "text": { "type": ["string", "null"] },
               "fontName": { "type": ["string", "null"] },
               "fontSize": { "type": ["number", "null"] },
@@ -28,6 +46,10 @@ nonisolated enum LocalAgentRunner {
               "position": { "type": ["integer", "null"] },
               "variants": { "type": ["array", "null"], "items": { "type": "object", "additionalProperties": false, "properties": { "name": { "type": "string" }, "width": { "type": "integer" }, "height": { "type": "integer" } }, "required": ["name", "width", "height"] } },
               "shape": { "type": ["string", "null"], "enum": ["rectangle", "ellipse", null] },
+              "imageRole": { "type": ["string", "null"], "enum": ["background", "photo", "illustration", "texture", "element", null] },
+              "referenceMode": { "type": ["string", "null"], "enum": ["style", "composition", "subject", "edit", null] },
+              "imageBackground": { "type": ["string", "null"], "enum": ["auto", "opaque", "transparent", null] },
+              "imageQuality": { "type": ["string", "null"], "enum": ["draft", "standard", "high", null] },
               "gradient": { "type": ["string", "null"], "enum": ["linear", "radial", null] },
               "colors": { "type": ["array", "null"], "minItems": 2, "maxItems": 12, "items": { "type": "string" } },
               "locations": { "type": ["array", "null"], "minItems": 2, "maxItems": 12, "items": { "type": "number" } },
@@ -44,11 +66,11 @@ nonisolated enum LocalAgentRunner {
               "visible": { "type": ["boolean", "null"] },
               "cornerRadius": { "type": ["number", "null"] }
             },
-            "required": ["type", "layerID", "layerIDs", "name", "text", "fontName", "fontSize", "alignment", "adjustment", "mask", "position", "variants", "shape", "gradient", "colors", "locations", "angle", "centerX", "centerY", "color", "width", "height", "x", "y", "rotation", "opacity", "visible", "cornerRadius"]
+            "required": ["type", "layerID", "layerIDs", "name", "prompt", "text", "fontName", "fontSize", "alignment", "adjustment", "mask", "position", "variants", "shape", "imageRole", "referenceMode", "imageBackground", "imageQuality", "gradient", "colors", "locations", "angle", "centerX", "centerY", "color", "width", "height", "x", "y", "rotation", "opacity", "visible", "cornerRadius"]
           }
         }
       },
-      "required": ["message", "actions"]
+      "required": ["message", "referenceAnalysis", "actions"]
     }
     """
 
@@ -155,7 +177,8 @@ nonisolated enum LocalAgentRunner {
         return text.isEmpty ? L10n.text("The local AI process exited without a response.") : String(text.suffix(2_000))
     }
 
-    static func prompt(userText: String, history: [AIChatMessage], context: String) -> String {
+    static func prompt(userText: String, history: [AIChatMessage], context: String,
+                       hasReferenceImage: Bool = false) -> String {
         let conversation = history.suffix(10).map { message in
             let role = message.role == .user ? "User" : message.role == .assistant ? "Assistant" : "System"
             return "\(role): \(message.text)"
@@ -164,6 +187,11 @@ nonisolated enum LocalAgentRunner {
         You are the design assistant inside Compositor, a local image editor. Return only the JSON object required by
         the supplied schema. Explain the result briefly in `message`, and place deterministic editor operations in
         `actions`. Never request shell access, files, or network tools.
+
+        When a reference image is attached, fill `referenceAnalysis` with a concise visual decomposition: overall style,
+        palette, composition, and a layer-by-layer reconstruction strategy. Otherwise return null. Rebuild typography,
+        shapes, gradients, masks, and layout with native editable actions. Use generated raster layers only for content
+        that genuinely requires new photographic, illustrative, textural, or subject pixels.
 
         Allowed actions:
         - create_canvas: width and height, only when no canvas exists. A new canvas is transparent; add exactly one
@@ -181,6 +209,11 @@ nonisolated enum LocalAgentRunner {
           Chinese, Helvetica Neue for Latin text, or null for the default.
         - edit_text: target an existing editable text layer by layerID. Use fontSize and box width for typography;
           do not use transform_layer merely to change a text font size.
+        - generate_image: schedules one raster image through a separately configured image Provider. Supply a detailed
+          `prompt`, imageRole, imageBackground, imageQuality, placement x/y/width/height, and name. Set referenceMode to
+          style, composition, subject, or edit only when a reference image is attached; otherwise null. Use transparent
+          background for isolated design elements. Never bake text, basic shapes, or gradients into generated pixels
+          when native editable actions can reproduce them. A plan may include at most eight generate_image actions.
         - rename_layer, set_opacity (0...1 or 0...100), set_visibility, transform_layer, duplicate_layer: use an exact
           layerID from the current state. Transform width/height are absolute layer bounds; preserve aspect ratio unless
           the user asks to distort. Omit unrelated values as null.
@@ -190,8 +223,8 @@ nonisolated enum LocalAgentRunner {
         - add_mask adds an empty reveal-all or hide-all raster mask; it does not identify or paint a subject.
           group_layers uses exact layerIDs. reorder_layer uses a one-based top-to-bottom position.
         - export_variants contains named width/height variants. The app will ask the user to choose a folder, then save PNG and editable .comp files.
-        - no_action: use when the request needs arbitrary vector paths, shadows, strokes, textures, unavailable
-          image-generation, semantic masking, painting, deletion, or essential details are missing. Explain exactly
+        - no_action: use when the request needs arbitrary vector paths, shadows, strokes, semantic masking, painting,
+          deletion, or essential details are missing. Explain exactly
           what is not supported yet.
 
         Keep every shape inside the canvas unless the user explicitly asks otherwise. Prefer a small sequence of clear,
@@ -209,6 +242,8 @@ nonisolated enum LocalAgentRunner {
 
         User request:
         \(userText)
+
+        Reference image attached: \(hasReferenceImage ? "yes" : "no")
         """
     }
 

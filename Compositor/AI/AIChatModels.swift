@@ -14,7 +14,16 @@ nonisolated struct AIChatMessage: Identifiable, Sendable {
 
 nonisolated struct AIEditorPlan: Codable, Sendable {
     let message: String
+    var referenceAnalysis: AIReferenceAnalysis? = nil
     let actions: [AIEditorAction]
+}
+
+nonisolated struct AIReferenceAnalysis: Codable, Equatable, Sendable {
+    let summary: String
+    let visualStyle: String
+    let palette: [String]
+    let composition: [String]
+    let layerStrategy: [String]
 }
 
 /// A deliberately small, provider-neutral command envelope. Optional fields keep one JSON Schema usable for every
@@ -24,6 +33,7 @@ nonisolated struct AIEditorAction: Codable, Sendable {
     var layerID: String? = nil
     var layerIDs: [String]? = nil
     var name: String? = nil
+    var prompt: String? = nil
     var text: String? = nil
     var fontName: String? = nil
     var fontSize: Double? = nil
@@ -33,6 +43,10 @@ nonisolated struct AIEditorAction: Codable, Sendable {
     var position: Int? = nil
     var variants: [AIExportVariant]? = nil
     var shape: String? = nil
+    var imageRole: String? = nil
+    var referenceMode: String? = nil
+    var imageBackground: String? = nil
+    var imageQuality: String? = nil
     var gradient: String? = nil
     var colors: [String]? = nil
     var locations: [Double]? = nil

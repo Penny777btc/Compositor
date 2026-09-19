@@ -16,7 +16,7 @@ import Testing
         #expect(session.activeLayer?.liveText?.style == edited)
 
         let snapshot = try #require(session.projectSnapshot())
-        #expect(snapshot.manifest.version == 9 && snapshot.manifest.layers.first?.text == edited)
+        #expect(snapshot.manifest.version == 10 && snapshot.manifest.layers.first?.text == edited)
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("CompositorTextTest-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }
         try await ProjectStore.shared.save(snapshot, to: root)

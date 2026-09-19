@@ -51,7 +51,7 @@ import Testing
         edited.angle = 35
         try session.updateGradientLayer(id, style: edited)
         let snapshot = try #require(session.projectSnapshot())
-        #expect(snapshot.manifest.version == 9)
+        #expect(snapshot.manifest.version == 10)
         #expect(snapshot.manifest.layers.first?.gradient == edited)
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("CompositorGradientTest-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }

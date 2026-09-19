@@ -16,7 +16,23 @@ final class AIChatController {
     var referenceImageURL: URL?
     var wantsExportFolder = false
     var pendingVariants: [AIExportVariant] = []
+    var pendingImageActions: [AIEditorAction] = []
+    private(set) var imageProviderName: String
+    private(set) var isImageProviderConfigured: Bool
+    @ObservationIgnored private(set) var imageGenerationProvider: any AIImageGenerationProvider
     @ObservationIgnored private var task: Task<Void, Never>?
+
+    init(imageGenerationProvider: any AIImageGenerationProvider = UnconfiguredImageGenerationProvider()) {
+        self.imageGenerationProvider = imageGenerationProvider
+        imageProviderName = imageGenerationProvider.displayName
+        isImageProviderConfigured = imageGenerationProvider.isConfigured
+    }
+
+    var imageProviderStatus: String {
+        isImageProviderConfigured
+            ? L10n.format("Image provider: %@", imageProviderName)
+            : L10n.text("Image provider: Not configured")
+    }
 
     func send(in session: EditorSession) {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -31,7 +47,8 @@ final class AIChatController {
         task = Task { [weak self] in
             guard let self else { return }
             do {
-                let prompt = LocalAgentRunner.prompt(userText: text, history: history, context: context)
+                let prompt = LocalAgentRunner.prompt(userText: text, history: history, context: context,
+                    hasReferenceImage: referenceImageURL != nil)
                 let scoped = referenceImageURL?.startAccessingSecurityScopedResource() == true
                 defer { if scoped { referenceImageURL?.stopAccessingSecurityScopedResource() } }
                 let plan = try await LocalAgentRunner.run(provider: provider, prompt: prompt,
@@ -62,20 +79,59 @@ final class AIChatController {
             text: L10n.text("Tell me what you want to create or change. I can operate the canvas and layers with Codex or Claude."))]
         error = nil
         pendingPlan = nil
+        pendingImageActions = []
     }
 
     func applyPending(in session: EditorSession) {
         guard let plan = pendingPlan else { return }
         pendingVariants = plan.actions.flatMap { $0.variants ?? [] }
-        let editing = AIEditorPlan(message: plan.message, actions: plan.actions.filter { $0.type != "export_variants" })
+        pendingImageActions = plan.actions.filter { $0.type == "generate_image" }
+        let editing = AIEditorPlan(message: plan.message, referenceAnalysis: plan.referenceAnalysis,
+            actions: plan.actions.filter { $0.type != "export_variants" && $0.type != "generate_image" })
         let results = AIEditorEngine.execute(editing, in: session)
         if !results.isEmpty { messages.append(AIChatMessage(role: .system, text: results.joined(separator: "\n"))) }
         pendingPlan = nil
         if !pendingVariants.isEmpty { wantsExportFolder = true }
+        if !pendingImageActions.isEmpty { runPendingImages(in: session) }
     }
 
     func discardPending() { pendingPlan = nil }
     func setReferenceImage(_ url: URL?) { referenceImageURL = url }
+
+    func setImageGenerationProvider(_ provider: any AIImageGenerationProvider) {
+        imageGenerationProvider = provider
+        imageProviderName = provider.displayName
+        isImageProviderConfigured = provider.isConfigured
+    }
+
+    func runPendingImages(in session: EditorSession) {
+        guard !pendingImageActions.isEmpty, !isRunning else { return }
+        guard imageGenerationProvider.isConfigured else {
+            messages.append(AIChatMessage(role: .system,
+                text: L10n.text("Image requests are saved in this plan. Configure an image provider to generate and insert them.")))
+            return
+        }
+        let actions = pendingImageActions
+        let provider = imageGenerationProvider
+        let reference = referenceImageURL
+        isRunning = true
+        task = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let results = try await AIImageGenerationPipeline.execute(actions, provider: provider,
+                    referenceURL: reference, in: session)
+                guard !Task.isCancelled else { return }
+                pendingImageActions = []
+                for result in results { messages.append(AIChatMessage(role: .system, text: result)) }
+            } catch {
+                guard !Task.isCancelled else { return }
+                self.error = error.localizedDescription
+                messages.append(AIChatMessage(role: .system, text: error.localizedDescription))
+            }
+            isRunning = false
+            task = nil
+        }
+    }
 
     func exportVariants(to folder: URL, session: EditorSession) {
         guard let snapshot = session.projectSnapshot(), !pendingVariants.isEmpty else { return }
@@ -194,6 +250,16 @@ struct AIChatPanel: View {
                         .accessibilityLabel("Send")
                     }
                 }
+                HStack(spacing: 6) {
+                    Circle().fill(controller.isImageProviderConfigured ? Color.green : Color.orange)
+                        .frame(width: 6, height: 6)
+                    Text(controller.imageProviderStatus).font(.caption2).foregroundStyle(.tertiary)
+                    Spacer()
+                    if !controller.pendingImageActions.isEmpty, controller.isImageProviderConfigured {
+                        Button("Generate Pending Images") { controller.runPendingImages(in: session) }
+                            .buttonStyle(.borderless).controlSize(.small)
+                    }
+                }
             }
             .padding(12)
             .background(.black.opacity(0.12))
@@ -235,6 +301,13 @@ private struct PlanPreview: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Proposed Changes", systemImage: "checklist").font(.caption.weight(.semibold))
+            if let analysis = plan.referenceAnalysis {
+                Text(analysis.summary).font(.caption).foregroundStyle(.secondary)
+                if !analysis.palette.isEmpty {
+                    Text(analysis.palette.joined(separator: "  ")).font(.caption2.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+            }
             ForEach(Array(plan.actions.prefix(24).enumerated()), id: \.offset) { _, action in
                 Text("• \(summary(action))").font(.caption.monospaced())
             }
@@ -256,6 +329,7 @@ private struct PlanPreview: View {
         case "edit_gradient": return "edit_gradient \((action.colors ?? []).joined(separator: " → "))"
         case "add_text": return "add_text \(String((action.text ?? "").prefix(32)).debugDescription) \(number(action.fontSize)) pt"
         case "edit_text": return "edit_text \(String((action.text ?? "").prefix(32)).debugDescription)"
+        case "generate_image": return "generate_image \(action.imageRole ?? "photo") \(number(action.width))×\(number(action.height)) \(String((action.prompt ?? "").prefix(40)).debugDescription)"
         case "transform_layer": return "transform_layer x:\(number(action.x)) y:\(number(action.y)) w:\(number(action.width)) h:\(number(action.height))"
         case "set_opacity": return "set_opacity \(number(action.opacity))"
         case "set_visibility": return "set_visibility \(action.visible.map { String($0) } ?? "")"

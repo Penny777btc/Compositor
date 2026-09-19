@@ -9,7 +9,7 @@ extension UTType {
 
 nonisolated struct ProjectManifest: Codable, Sendable {
     var format = "com.compositor.project"
-    var version = 9
+    var version = 10
     var colorSpace = "sRGB"
     var resolution: Double? = nil // Older version-1 projects default to 72 pixels/inch.
     let documentID: UUID
@@ -43,6 +43,8 @@ nonisolated struct ProjectLayerRecord: Codable, Sendable {
     var text: TextLayerStyle? = nil
     /// Editable smooth-gradient metadata. The PNG remains a compatibility preview.
     var gradient: LayerGradientStyle? = nil
+    /// Non-secret provenance for an AI-generated raster. Credentials and reference bytes are never stored here.
+    var generation: LayerGenerationRecord? = nil
 }
 
 nonisolated struct ProjectSnapshot: @unchecked Sendable {
@@ -56,7 +58,7 @@ nonisolated enum ProjectError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalid: L10n.text("This is not a valid Compositor project, or its metadata is damaged.")
-        case .version(let version): L10n.format("This project uses format version %lld. This app supports versions 1–9.", version)
+        case .version(let version): L10n.format("This project uses format version %lld. This app supports versions 1–10.", version)
         case .missingImage: L10n.text("An image inside the project is missing or damaged. The current document has not been replaced.")
         case .tooLarge: L10n.text("This project exceeds the supported canvas, layer, file-size, or 100-megapixel image limit.")
         case .encode: L10n.text("An image could not be saved. The previous project has not been replaced.")
@@ -136,7 +138,7 @@ actor ProjectStore {
         do { header = try JSONDecoder().decode(Header.self, from: metadata) }
         catch { throw ProjectError.invalid }
         guard header.format == "com.compositor.project" else { throw ProjectError.invalid }
-        guard (1...9).contains(header.version) else { throw ProjectError.version(header.version) }
+        guard (1...10).contains(header.version) else { throw ProjectError.version(header.version) }
         do { manifest = try JSONDecoder().decode(ProjectManifest.self, from: metadata) }
         catch { throw ProjectError.invalid }
         try validate(manifest)
@@ -176,7 +178,7 @@ actor ProjectStore {
 
     private func validate(_ manifest: ProjectManifest) throws {
         guard manifest.format == "com.compositor.project" else { throw ProjectError.invalid }
-        guard (1...9).contains(manifest.version) else { throw ProjectError.version(manifest.version) }
+        guard (1...10).contains(manifest.version) else { throw ProjectError.version(manifest.version) }
         guard manifest.colorSpace == "sRGB" else { throw ProjectError.invalid }
         if let resolution = manifest.resolution {
             guard resolution.isFinite, (1...9600).contains(resolution) else { throw ProjectError.invalid }
@@ -195,6 +197,11 @@ actor ProjectStore {
                 guard manifest.version >= 9, layer.isGroup != true, layer.adjustment == nil,
                       layer.shape == nil, layer.text == nil,
                       layer.imageFile == "\(layer.id.uuidString).png", gradient.isValid else { throw ProjectError.invalid }
+            }
+            if let generation = layer.generation {
+                guard manifest.version >= 10, layer.isGroup != true, layer.adjustment == nil,
+                      layer.shape == nil, layer.text == nil, layer.gradient == nil,
+                      layer.imageFile == "\(layer.id.uuidString).png", generation.isValid else { throw ProjectError.invalid }
             }
             // Layer masks arrived in version 4, folder masks in version 6.
             guard layer.maskFile == nil || (manifest.version >= (layer.isGroup == true ? 6 : 4)

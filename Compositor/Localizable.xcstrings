@@ -5481,12 +5481,162 @@
         }
       }
     },
-    "This project uses format version %lld. This app supports versions 1–9.": {
+    "This project uses format version %lld. This app supports versions 1–10.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "此项目使用格式版本 %lld。本应用支持版本 1–9。"
+            "value": "此项目使用格式版本 %lld。本应用支持版本 1–10。"
+          }
+        }
+      }
+    },
+    "A plan can generate at most eight images at once.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一个计划最多可以同时生成八张图片。"
+          }
+        }
+      }
+    },
+    "AI Generated Image": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 生成图片"
+          }
+        }
+      }
+    },
+    "Create a canvas before generating image layers.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先创建画布，再生成图片图层。"
+          }
+        }
+      }
+    },
+    "Generate Pending Images": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生成待处理图片"
+          }
+        }
+      }
+    },
+    "Generated Image": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生成图片"
+          }
+        }
+      }
+    },
+    "Generated image layer: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已生成图片图层：%@"
+          }
+        }
+      }
+    },
+    "Image generation is ready, but no image provider is configured yet.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "图片生成框架已就绪，但尚未配置图片提供商。"
+          }
+        }
+      }
+    },
+    "Image provider: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "图片提供商：%@"
+          }
+        }
+      }
+    },
+    "Image provider: Not configured": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "图片提供商：未配置"
+          }
+        }
+      }
+    },
+    "Image requests are saved in this plan. Configure an image provider to generate and insert them.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "图片请求已保存在此计划中。配置图片提供商后即可生成并插入图层。"
+          }
+        }
+      }
+    },
+    "The image generation request is invalid.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "图片生成请求无效。"
+          }
+        }
+      }
+    },
+    "The image provider returned an invalid or oversized image.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "图片提供商返回了无效或尺寸过大的图片。"
+          }
+        }
+      }
+    },
+    "The reference image must be a regular image file no larger than 50 MB.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "参考图必须是大小不超过 50 MB 的普通图片文件。"
+          }
+        }
+      }
+    },
+    "The selected reference is not a supported image.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所选参考文件不是支持的图片。"
+          }
+        }
+      }
+    },
+    "This image request needs the attached reference image.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此图片请求需要已附加的参考图。"
           }
         }
       }

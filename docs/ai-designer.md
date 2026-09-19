@@ -11,6 +11,8 @@ thread when available, with the restricted one-shot CLI path as a fallback.
 - add editable rectangle, rounded-rectangle, and ellipse shape layers
 - add and edit native editable text layers
 - add and edit smooth linear or radial gradient layers with two to twelve color stops
+- analyze an attached reference into style, palette, composition, and a layer reconstruction strategy
+- plan Provider-neutral generated background, photo, illustration, texture, and transparent-element layers
 - rename, duplicate, move, resize, rotate, reorder, and group layers by stable UUID
 - change layer opacity and visibility
 - add default editable adjustment layers and reveal-all/hide-all raster masks
@@ -19,6 +21,19 @@ thread when available, with the restricted one-shot CLI path as a fallback.
 
 The model returns a JSON-Schema-constrained plan. The app validates every action and executes only the allowlisted editor
 commands. It does not grant arbitrary shell, file, network, painting, deletion, or project-replacement access.
+
+## Image Provider pipeline
+
+`generate_image` is a Provider-neutral request, not a promise that Codex itself returns pixels. It carries a prompt,
+design role, reference intent, transparency/quality choice, requested dimensions, and target layer frame. Native text,
+shapes, and gradients stay separate actions so editable content is not baked into generated pixels.
+
+An `AIImageGenerationProvider` implementation returns encoded image bytes plus its public model identifier and optional
+revised prompt. The pipeline validates media type, encoded size, dimensions, and the 100-megapixel limit before inserting
+the result. A generated layer stores only non-secret provenance in project format version 10; credentials, reference
+bytes, and local paths are never serialized. If no Provider is configured, requests stay pending and no placeholder
+pixels are inserted. The current development build intentionally ships in that state until a Provider and credential
+route are selected.
 
 ## Capability contract
 
@@ -40,8 +55,8 @@ the file the user selected.
 
 ## Current limitations
 
-- reference images can guide the planning model, but generated raster images are not implemented without a separate
-  image-generation provider
+- generated raster execution awaits a configured image Provider; the request, validation, insertion, retry, and project
+  provenance framework is present
 - adjustment commands create editable defaults; exact numerical exposure, levels, curves, grain, and gradient-map
   parameters still require their existing editor panels
 - arbitrary vector paths, strokes, shadows, semantic masks, painting, and deletion are not exposed to AI yet

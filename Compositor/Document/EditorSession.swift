@@ -3,7 +3,7 @@ import SwiftUI
 struct ImageLayer: Identifiable, Equatable {
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.id == rhs.id && lhs.name == rhs.name && lhs.isVisible == rhs.isVisible && lhs.transform == rhs.transform
-            && lhs.asset?.image === rhs.asset?.image && lhs.parentID == rhs.parentID && lhs.isGroup == rhs.isGroup && lhs.opacity == rhs.opacity && lhs.blendMode == rhs.blendMode && lhs.mask == rhs.mask && lhs.maskSourceID == rhs.maskSourceID && lhs.adjustment == rhs.adjustment && lhs.shape == rhs.shape && lhs.text == rhs.text && lhs.gradient == rhs.gradient
+            && lhs.asset?.image === rhs.asset?.image && lhs.parentID == rhs.parentID && lhs.isGroup == rhs.isGroup && lhs.opacity == rhs.opacity && lhs.blendMode == rhs.blendMode && lhs.mask == rhs.mask && lhs.maskSourceID == rhs.maskSourceID && lhs.adjustment == rhs.adjustment && lhs.shape == rhs.shape && lhs.text == rhs.text && lhs.gradient == rhs.gradient && lhs.generation == rhs.generation
     }
     let id: UUID
     var asset: ImportedImage?
@@ -24,6 +24,8 @@ struct ImageLayer: Identifiable, Equatable {
     var text: LayerText?
     /// Set while this layer remains an editable smooth gradient.
     var gradient: LayerGradient?
+    /// Non-secret provenance for an image generated through an AI Provider.
+    var generation: LayerGenerationRecord?
     var size: CGSize { transform.size }
 
     init(asset: ImportedImage, origin: CGPoint) {
@@ -40,7 +42,7 @@ struct ImageLayer: Identifiable, Equatable {
         self.name = name
     }
 
-    init(id: UUID, asset: ImportedImage?, name: String, isVisible: Bool, transform: LayerTransform, parentID: UUID? = nil, isGroup: Bool = false, opacity: Double = 1, blendMode: LayerBlendMode = .normal, mask: LayerMask? = nil, maskSourceID: UUID? = nil, adjustment: LayerAdjustment? = nil, shape: LayerShape? = nil, text: LayerText? = nil, gradient: LayerGradient? = nil) {
+    init(id: UUID, asset: ImportedImage?, name: String, isVisible: Bool, transform: LayerTransform, parentID: UUID? = nil, isGroup: Bool = false, opacity: Double = 1, blendMode: LayerBlendMode = .normal, mask: LayerMask? = nil, maskSourceID: UUID? = nil, adjustment: LayerAdjustment? = nil, shape: LayerShape? = nil, text: LayerText? = nil, gradient: LayerGradient? = nil, generation: LayerGenerationRecord? = nil) {
         self.id = id
         self.asset = asset
         self.name = name
@@ -56,6 +58,7 @@ struct ImageLayer: Identifiable, Equatable {
         self.shape = shape
         self.text = text
         self.gradient = gradient
+        self.generation = generation
     }
 }
 

@@ -25,6 +25,9 @@ enum AIEditorEngine {
             } else if let shape = layer.liveShape?.style {
                 type = "editable_shape"
                 details = " kind=\(shape.kind.rawValue) color=\(shape.color.hex) cornerRadius=\(shape.cornerRadius)"
+            } else if let generation = layer.generation {
+                type = "generated_image"
+                details = " provider=\(generation.providerID.debugDescription) model=\(generation.model.debugDescription) role=\(generation.role.rawValue) prompt=\(String(generation.prompt.prefix(500)).debugDescription)"
             } else {
                 type = "raster_image"; details = ""
             }
@@ -195,7 +198,7 @@ enum AIEditorEngine {
                 let target = rows[position - 1].layer
                 _ = session.placeLayer(id, in: target.parentID, above: target.id)
             }
-        case "export_variants", "no_action": break
+        case "generate_image", "export_variants", "no_action": break
         default: throw CommandError.unsupported
         }
     }
