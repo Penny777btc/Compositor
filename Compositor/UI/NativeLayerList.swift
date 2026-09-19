@@ -196,6 +196,16 @@ struct NativeLayerList: NSViewRepresentable {
             session.endEdit()
             return placed
         }
+        /// Reorders a root/sibling row without a drag event. Kept as the small deterministic core used by tests and
+        /// accessibility-driven callers; ordinary pointer reordering still goes through `acceptDrop` above.
+        func moveLayer(_ id: UUID, to row: Int) -> Bool {
+            guard session.canEditLayers, rows.contains(where: { $0.id == id }), (0...rows.count).contains(row) else {
+                return false
+            }
+            if row == rows.count { return session.placeLayer(id, in: nil, atBottom: true) }
+            let target = rows[row]
+            return session.placeLayer(id, in: target.parentID, above: target.id)
+        }
         private func draggedMask(_ info: NSDraggingInfo) -> UUID? {
             info.draggingPasteboard.string(forType: Self.maskType).flatMap(UUID.init(uuidString:))
         }

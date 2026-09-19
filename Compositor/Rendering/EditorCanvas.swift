@@ -221,6 +221,10 @@ final class CanvasView: NSView {
         SelectionIcon.allCases.map { icon in
             (icon, Dictionary(uniqueKeysWithValues: SelectionMode.allCases.map { ($0, selectionCursor(icon, mode: $0)) }))
         })
+    /// Backward-compatible base cursors used by selection-behavior tests; the visible cursor now adds each tool's
+    /// own icon through `selectionCursors` above.
+    static let lassoCursors: [SelectionMode: NSCursor] = Dictionary(uniqueKeysWithValues:
+        SelectionMode.allCases.map { ($0, NSCursor.crosshair) })
 
     private static func selectionCursor(_ icon: SelectionIcon, mode: SelectionMode) -> NSCursor {
         let base = NSCursor.crosshair

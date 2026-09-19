@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var adjustmentPanel = FloatingPanelController(name: "adjustmentPanel")
     @State private var filterPanel = FloatingPanelController(name: "filterPanel")
     @State private var isDropTargeted = false
+    @State private var aiChat = AIChatController()
     /// The window's width, so the tab strip can use the toolbar's free space.
     @State private var windowWidth: CGFloat = 1180
     /// A layer dragged from this canvas's own tab has nowhere to go, so the canvas doesn't light up for it.
@@ -20,7 +21,10 @@ struct ContentView: View {
         return workspace.canReceiveDrag(into: workspace.current.id)
     }
     var body: some View {
-        VStack(spacing: 0) {
+        HStack(spacing: 0) {
+            AIChatPanel(controller: aiChat, session: session)
+            Divider()
+            VStack(spacing: 0) {
             if session.tool == .move {
                 TransformInspector(session: session).id(session.activeLayerID)
                 Divider()
@@ -80,6 +84,7 @@ struct ContentView: View {
             // Keeps its own height however short the window gets; the tools scroll instead.
             statusBar.fixedSize(horizontal: false, vertical: true)
                 .modifier(WidthReader(width: $windowWidth))
+            }
         }
         .background(Color(white: 0.14))
         .background {
@@ -87,7 +92,7 @@ struct ContentView: View {
                 ProjectWindowBridge(controller: applicationDelegate.projects).frame(width: 0, height: 0)
             }
         }
-        .frame(minWidth: 800, minHeight: 520)
+        .frame(minWidth: 1080, minHeight: 520)
         .coordinateSpace(name: "editor")
         .onDrop(of: [UTType.fileURL.identifier, UTType.image.identifier, ProjectWorkspace.layerType], isTargeted: $isDropTargeted) { providers, location in
             guard session.levels == nil, !session.isProjectBusy, !session.showsNewDocument, !session.showsImporter, session.renamingLayerID == nil else { return false }
