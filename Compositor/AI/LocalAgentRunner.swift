@@ -148,13 +148,31 @@ nonisolated enum LocalAgentRunner {
     }
 
     private static func locate(_ provider: LocalAIProvider) throws -> URL {
-        let name = provider == .codex ? "codex" : "claude"
-        let home = FileManager.default.homeDirectoryForCurrentUser.path
-        let candidates = ["/opt/homebrew/bin/\(name)", "/usr/local/bin/\(name)", "\(home)/.local/bin/\(name)"]
-        guard let path = candidates.first(where: FileManager.default.isExecutableFile(atPath:)) else {
+        guard let path = executableCandidates(for: provider)
+            .first(where: FileManager.default.isExecutableFile(atPath:)) else {
             throw AIChatError.executableMissing(provider)
         }
         return URL(fileURLWithPath: path)
+    }
+
+    static func executableCandidates(for provider: LocalAIProvider,
+                                     environment: [String: String] = ProcessInfo.processInfo.environment) -> [String] {
+        let name = provider == .codex ? "codex" : "claude"
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        var paths = [
+            "/opt/homebrew/bin/\(name)",
+            "/usr/local/bin/\(name)",
+            "\(home)/.local/bin/\(name)",
+        ]
+        if provider == .codex {
+            paths += [
+                "/Applications/ChatGPT.app/Contents/Resources/codex",
+                "/Applications/Codex.app/Contents/Resources/codex",
+            ]
+        }
+        paths += (environment["PATH"] ?? "").split(separator: ":").map { "\($0)/\(name)" }
+        var seen = Set<String>()
+        return paths.filter { seen.insert($0).inserted }
     }
 
     private static func process(executable: URL, arguments: [String], input: String, directory: URL? = nil)

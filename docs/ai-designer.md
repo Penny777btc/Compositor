@@ -55,7 +55,8 @@ described as an empty reveal/hide mask, not semantic subject masking.
 ## Local requirements
 
 The build looks for `codex` or `claude` in `/opt/homebrew/bin`, `/usr/local/bin`, or `~/.local/bin`. The selected CLI must
-already be authenticated. Codex app-server uses JSON-RPC with a schema-constrained result. The fallback runs in an empty
+already be authenticated. It also checks the inherited `PATH` and common ChatGPT/Codex application resource locations.
+Codex app-server uses JSON-RPC with a schema-constrained result. The fallback runs in an empty
 temporary directory with a read-only sandbox; Claude runs in restricted safe mode. Reference-image access is limited to
 the file the user selected.
 
@@ -67,3 +68,6 @@ the file the user selected.
   parameters still require their existing editor panels
 - complex Bezier-node editing, shadows, semantic masks, painting, and deletion are not exposed to AI yet
 - a production sandboxed release still needs a separately signed local AI bridge instead of launching CLIs directly
+
+The Debug configuration is intentionally not App Sandbox-enabled so local development builds can launch an already
+authenticated Codex or Claude CLI. Release remains sandboxed and must use the signed bridge before public distribution.

@@ -105,4 +105,13 @@ import UniformTypeIdentifiers
         #expect(prompt.contains("Never bake text"))
     }
 
+    @Test func localAgentSearchesHomebrewAppBundlesAndPath() {
+        let paths = LocalAgentRunner.executableCandidates(for: .codex,
+            environment: ["PATH": "/custom/bin:/opt/homebrew/bin"])
+        #expect(paths.first == "/opt/homebrew/bin/codex")
+        #expect(paths.contains("/Applications/ChatGPT.app/Contents/Resources/codex"))
+        #expect(paths.contains("/custom/bin/codex"))
+        #expect(paths.filter { $0 == "/opt/homebrew/bin/codex" }.count == 1)
+    }
+
 }
