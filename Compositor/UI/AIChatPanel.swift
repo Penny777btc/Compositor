@@ -157,7 +157,6 @@ struct AIChatPanel: View {
     @Bindable var controller: AIChatController
     let session: EditorSession
     @FocusState private var inputFocused: Bool
-    @State private var choosingReference = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -234,8 +233,10 @@ struct AIChatPanel: View {
                     .lineLimit(1...5).textFieldStyle(.plain).focused($inputFocused)
                     .onSubmit { controller.send(in: session) }
                 HStack {
-                    Button { choosingReference = true } label: { Image(systemName: "paperclip") }
+                    Button { Task { await chooseReferenceImage() } } label: { Image(systemName: "paperclip") }
                         .buttonStyle(.plain).help("Attach reference image")
+                        .accessibilityLabel("Attach reference image")
+                        .accessibilityIdentifier("attachReferenceImage")
                     Text("Uses your local \(controller.provider.rawValue) login; prompts, canvas metadata, and attached references are sent to its model service.")
                         .font(.caption).foregroundStyle(.tertiary)
                     Spacer()
@@ -266,12 +267,22 @@ struct AIChatPanel: View {
         }
         .frame(minWidth: 280, idealWidth: 320, maxWidth: 360)
         .background(Color(white: 0.12))
-        .fileImporter(isPresented: $choosingReference, allowedContentTypes: [.png, .jpeg, .heic, .tiff]) { result in
-            if case .success(let url) = result { controller.setReferenceImage(url) }
-        }
         .fileImporter(isPresented: $controller.wantsExportFolder, allowedContentTypes: [.folder]) { result in
             if case .success(let folder) = result { controller.exportVariants(to: folder, session: session) }
         }
+    }
+
+    private func chooseReferenceImage() async {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.png, .jpeg, .heic, .tiff]
+        panel.allowsMultipleSelection = false
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.resolvesAliases = true
+        panel.message = L10n.text("Choose a reference image for the AI design plan.")
+        panel.prompt = L10n.text("Attach")
+        guard await panel.begin() == .OK, let url = panel.url else { return }
+        controller.setReferenceImage(url)
     }
 }
 

@@ -5831,6 +5831,26 @@
         }
       }
     },
+    "Attach": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "附加"
+          }
+        }
+      }
+    },
+    "Choose a reference image for the AI design plan.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "为 AI 设计计划选择一张参考图。"
+          }
+        }
+      }
+    },
     "Your text": {
       "localizations": {
         "zh-Hans": {
