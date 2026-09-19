@@ -10,6 +10,12 @@ nonisolated struct AIChatMessage: Identifiable, Sendable {
     let id = UUID()
     let role: Role
     let text: String
+    var attachment: AIChatAttachment? = nil
+}
+
+nonisolated struct AIChatAttachment: Sendable {
+    let name: String
+    let cachedURL: URL
 }
 
 nonisolated struct AIEditorPlan: Codable, Sendable {
@@ -75,6 +81,7 @@ nonisolated enum AIChatError: LocalizedError {
     case launch(String)
     case failed(String)
     case invalidResponse
+    case referenceNotAnalyzed
 
     var errorDescription: String? {
         switch self {
@@ -83,6 +90,7 @@ nonisolated enum AIChatError: LocalizedError {
         case .launch(let message): return message
         case .failed(let message): return message
         case .invalidResponse: return L10n.text("The AI returned a response that could not be understood.")
+        case .referenceNotAnalyzed: return L10n.text("The reference image was attached, but the AI did not return a visual analysis. Please try again.")
         }
     }
 }

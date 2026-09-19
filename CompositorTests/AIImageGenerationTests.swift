@@ -80,6 +80,20 @@ import UniformTypeIdentifiers
             || controller.messages.last?.text.contains("提供商") == true)
     }
 
+    @Test func selectedReferenceIsValidatedAndCopiedIntoAppCache() async throws {
+        let source = FileManager.default.temporaryDirectory.appendingPathComponent("Reference Source \(UUID().uuidString).png")
+        defer { try? FileManager.default.removeItem(at: source) }
+        try png().write(to: source, options: .atomic)
+        let controller = AIChatController()
+        try await controller.attachReferenceImage(from: source)
+        let cached = try #require(controller.referenceImageURL)
+        #expect(cached != source)
+        #expect(controller.referenceImageName == source.lastPathComponent)
+        #expect(FileManager.default.isReadableFile(atPath: cached.path))
+        controller.clearReferenceImage()
+        #expect(controller.referenceImageURL == nil)
+    }
+
     @Test func referenceAnalysisAndImageToolAreInTheStrictSchema() throws {
         let data = try #require(LocalAgentRunner.schema.data(using: .utf8))
         _ = try JSONSerialization.jsonObject(with: data)

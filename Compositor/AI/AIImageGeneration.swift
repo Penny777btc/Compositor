@@ -23,6 +23,42 @@ nonisolated struct AIImageReference: Sendable {
     let mediaType: String
 }
 
+nonisolated struct AICachedReferenceImage: Sendable {
+    let url: URL
+    let displayName: String
+}
+
+nonisolated enum AIReferenceImageCache {
+    static func importImage(from source: URL) throws -> AICachedReferenceImage {
+        let values = try source.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+        guard values.isRegularFile == true, let size = values.fileSize, size > 0, size <= 50 * 1024 * 1024,
+              let type = UTType(filenameExtension: source.pathExtension), type.conforms(to: .image),
+              let imageSource = CGImageSourceCreateWithURL(source as CFURL, [kCGImageSourceShouldCache: false] as CFDictionary),
+              CGImageSourceGetCount(imageSource) == 1 else { throw AIImageGenerationError.referenceInvalid }
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("CompositorReferences", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true,
+            attributes: [.posixPermissions: 0o700])
+        let ext = source.pathExtension.lowercased()
+        let target = folder.appendingPathComponent(UUID().uuidString).appendingPathExtension(ext)
+        do {
+            try FileManager.default.copyItem(at: source, to: target)
+            try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: target.path)
+            return AICachedReferenceImage(url: target, displayName: source.lastPathComponent)
+        } catch {
+            try? FileManager.default.removeItem(at: target)
+            throw error
+        }
+    }
+
+    static func remove(_ url: URL?) {
+        guard let url else { return }
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("CompositorReferences", isDirectory: true)
+            .standardizedFileURL.path + "/"
+        guard url.standardizedFileURL.path.hasPrefix(folder) else { return }
+        try? FileManager.default.removeItem(at: url)
+    }
+}
+
 nonisolated struct AIImageGenerationRequest: Sendable {
     let id: UUID
     let prompt: String

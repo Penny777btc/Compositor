@@ -5831,6 +5831,16 @@
         }
       }
     },
+    "Analyzing reference image…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在分析参考图…"
+          }
+        }
+      }
+    },
     "Attach": {
       "localizations": {
         "zh-Hans": {
@@ -5847,6 +5857,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "为 AI 设计计划选择一张参考图。"
+          }
+        }
+      }
+    },
+    "Reference attached": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已附加参考图"
+          }
+        }
+      }
+    },
+    "The reference image was attached, but the AI did not return a visual analysis. Please try again.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "参考图已附加，但 AI 没有返回视觉分析，请重试。"
           }
         }
       }

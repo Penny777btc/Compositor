@@ -14,12 +14,15 @@ final class AIChatController {
     var error: String?
     var pendingPlan: AIEditorPlan?
     var referenceImageURL: URL?
+    var referenceImageName: String?
+    var activeRequestHasReference = false
     var wantsExportFolder = false
     var pendingVariants: [AIExportVariant] = []
     var pendingImageActions: [AIEditorAction] = []
     private(set) var imageProviderName: String
     private(set) var isImageProviderConfigured: Bool
     @ObservationIgnored private(set) var imageGenerationProvider: any AIImageGenerationProvider
+    @ObservationIgnored private var cachedReferenceURLs: Set<URL> = []
     @ObservationIgnored private var task: Task<Void, Never>?
 
     init(imageGenerationProvider: any AIImageGenerationProvider = UnconfiguredImageGenerationProvider()) {
@@ -40,20 +43,24 @@ final class AIChatController {
         draft = ""
         error = nil
         let history = messages
-        messages.append(AIChatMessage(role: .user, text: text))
+        let reference = referenceImageURL
+        let attachment = reference.map { AIChatAttachment(name: referenceImageName ?? $0.lastPathComponent, cachedURL: $0) }
+        messages.append(AIChatMessage(role: .user, text: text, attachment: attachment))
         let provider = provider
         let context = AIEditorEngine.context(for: session)
         isRunning = true
+        activeRequestHasReference = reference != nil
         task = Task { [weak self] in
             guard let self else { return }
             do {
                 let prompt = LocalAgentRunner.prompt(userText: text, history: history, context: context,
-                    hasReferenceImage: referenceImageURL != nil)
-                let scoped = referenceImageURL?.startAccessingSecurityScopedResource() == true
-                defer { if scoped { referenceImageURL?.stopAccessingSecurityScopedResource() } }
+                    hasReferenceImage: reference != nil)
+                let scoped = reference?.startAccessingSecurityScopedResource() == true
+                defer { if scoped { reference?.stopAccessingSecurityScopedResource() } }
                 let plan = try await LocalAgentRunner.run(provider: provider, prompt: prompt,
-                    referenceImage: referenceImageURL)
+                    referenceImage: reference)
                 guard !Task.isCancelled else { return }
+                if reference != nil, plan.referenceAnalysis == nil { throw AIChatError.referenceNotAnalyzed }
                 pendingPlan = plan
                 messages.append(AIChatMessage(role: .assistant, text: plan.message))
             } catch {
@@ -62,6 +69,7 @@ final class AIChatController {
                 messages.append(AIChatMessage(role: .system, text: error.localizedDescription))
             }
             isRunning = false
+            activeRequestHasReference = false
             task = nil
         }
     }
@@ -71,6 +79,7 @@ final class AIChatController {
         LocalAgentRunner.cancelCurrent()
         task = nil
         isRunning = false
+        activeRequestHasReference = false
     }
 
     func clear() {
@@ -96,7 +105,21 @@ final class AIChatController {
     }
 
     func discardPending() { pendingPlan = nil }
-    func setReferenceImage(_ url: URL?) { referenceImageURL = url }
+    func attachReferenceImage(from source: URL) async throws {
+        let scoped = source.startAccessingSecurityScopedResource()
+        defer { if scoped { source.stopAccessingSecurityScopedResource() } }
+        let cached = try await Task.detached(priority: .userInitiated) {
+            try AIReferenceImageCache.importImage(from: source)
+        }.value
+        cachedReferenceURLs.insert(cached.url)
+        referenceImageURL = cached.url
+        referenceImageName = cached.displayName
+    }
+
+    func clearReferenceImage() {
+        referenceImageURL = nil
+        referenceImageName = nil
+    }
 
     func setImageGenerationProvider(_ provider: any AIImageGenerationProvider) {
         imageGenerationProvider = provider
@@ -151,6 +174,8 @@ final class AIChatController {
             isRunning = false
         }
     }
+
+    deinit { for url in cachedReferenceURLs { AIReferenceImageCache.remove(url) } }
 }
 
 struct AIChatPanel: View {
@@ -195,7 +220,8 @@ struct AIChatPanel: View {
                         if controller.isRunning {
                             HStack(spacing: 8) {
                                 ProgressView().controlSize(.small)
-                                Text("Thinking and editing…").foregroundStyle(.secondary)
+                                Text(controller.activeRequestHasReference ? "Analyzing reference image…" : "Thinking and editing…")
+                                    .foregroundStyle(.secondary)
                                 Spacer()
                             }
                             .padding(.horizontal, 12)
@@ -222,10 +248,11 @@ struct AIChatPanel: View {
                         }
                         VStack(alignment: .leading) {
                             Text("Reference Image").font(.caption.weight(.semibold))
-                            Text(url.lastPathComponent).font(.caption2).lineLimit(1).foregroundStyle(.secondary)
+                            Text(controller.referenceImageName ?? url.lastPathComponent).font(.caption2).lineLimit(1)
+                                .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Button { controller.setReferenceImage(nil) } label: { Image(systemName: "xmark.circle.fill") }
+                        Button { controller.clearReferenceImage() } label: { Image(systemName: "xmark.circle.fill") }
                             .buttonStyle(.plain)
                     }
                 }
@@ -282,7 +309,11 @@ struct AIChatPanel: View {
         panel.message = L10n.text("Choose a reference image for the AI design plan.")
         panel.prompt = L10n.text("Attach")
         guard await panel.begin() == .OK, let url = panel.url else { return }
-        controller.setReferenceImage(url)
+        do { try await controller.attachReferenceImage(from: url) }
+        catch {
+            controller.error = error.localizedDescription
+            controller.messages.append(AIChatMessage(role: .system, text: error.localizedDescription))
+        }
     }
 }
 
@@ -292,8 +323,21 @@ private struct MessageBubble: View {
     var body: some View {
         HStack {
             if user { Spacer(minLength: 32) }
-            Text(message.text)
-                .textSelection(.enabled)
+            VStack(alignment: .leading, spacing: 7) {
+                if let attachment = message.attachment {
+                    HStack(spacing: 7) {
+                        if let image = NSImage(contentsOf: attachment.cachedURL) {
+                            Image(nsImage: image).resizable().scaledToFill().frame(width: 42, height: 42).clipped()
+                                .clipShape(RoundedRectangle(cornerRadius: 5))
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Reference attached").font(.caption2.weight(.semibold))
+                            Text(attachment.name).font(.caption2).lineLimit(1).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                Text(message.text).textSelection(.enabled)
+            }
                 .padding(.horizontal, 11).padding(.vertical, 9)
                 .background(user ? Color.accentColor.opacity(0.75)
                     : message.role == .system ? Color.orange.opacity(0.18) : Color.white.opacity(0.08),
