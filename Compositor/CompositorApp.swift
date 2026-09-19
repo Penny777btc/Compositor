@@ -1,5 +1,4 @@
 import SwiftUI
-import Sparkle
 
 @main
 struct CompositorApp: App {
@@ -80,9 +79,6 @@ struct CompositorApp: App {
                 }
                 // Grouped: a commands builder takes at most ten items.
                 Group {
-                    CommandGroup(after: .appInfo) {
-                        Button("Check for Updates…") { applicationDelegate.updater.checkForUpdates(nil) }
-                    }
                     CommandGroup(after: .toolbar) {
                         Button("Fit Canvas") { session.fit() }.keyboardShortcut("0").disabled(session.document == nil)
                         Button("Actual Pixels") { session.zoom(to: 1) }.keyboardShortcut("1").disabled(session.document == nil)
