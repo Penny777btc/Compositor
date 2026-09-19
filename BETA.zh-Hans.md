@@ -1,4 +1,4 @@
-# Compositor 中文体验版 1.0.4.1
+# Compositor 中文体验版 1.0.4.2
 
 这是由 Penny777btc 基于开源项目 [Compositor](https://github.com/robbietilton/Compositor) 制作的非官方简体中文体验版，与原项目作者 Wonder Assembly LLC 没有官方隶属关系。
 
@@ -13,6 +13,8 @@
 
 ## 体验版说明
 
+- 修复简体中文环境下打开“画布大小”面板时应用闪退的问题。
+- 增加本地化格式参数校验与英文安全回退，避免同类翻译错误导致崩溃。
 - 包含简体中文和英文，语言由 macOS 的应用语言设置决定。
 - 为避免覆盖官方版，本体验版使用独立的 Bundle ID。
 - 此体验版已禁用原版自动更新；后续测试版本请关注本仓库的 GitHub Releases。

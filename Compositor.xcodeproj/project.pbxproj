@@ -408,7 +408,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 100401;
+				CURRENT_PROJECT_VERSION = 100402;
 				DEVELOPMENT_TEAM = YY4JJY99NB;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -423,7 +423,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.4.1;
+				MARKETING_VERSION = 1.0.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.penny777btc.compositor.zhbeta;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -445,7 +445,7 @@
 				CODE_SIGN_ENTITLEMENTS = Config/Compositor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 100401;
+				CURRENT_PROJECT_VERSION = 100402;
 				DEVELOPMENT_TEAM = YY4JJY99NB;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -460,7 +460,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.4.1;
+				MARKETING_VERSION = 1.0.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.penny777btc.compositor.zhbeta;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

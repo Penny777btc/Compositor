@@ -41,8 +41,8 @@ struct CanvasSizeSheet: View {
     @ViewBuilder private var sheet: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Canvas Size").font(.title2.bold())
-            Text("Current: \(draft.originalWidth) × \(draft.originalHeight) pixels")
-            Text("\(bytes(draft.originalWidth, draft.originalHeight)) uncompressed RGBA canvas")
+            Text(L10n.format("Current: %lld × %lld pixels", draft.originalWidth, draft.originalHeight))
+            Text(L10n.format("%@ uncompressed RGBA canvas", bytes(draft.originalWidth, draft.originalHeight)))
                 .font(.callout).foregroundStyle(.secondary)
             Divider()
             Picker("Units", selection: $draft.unit) {
@@ -62,7 +62,9 @@ struct CanvasSizeSheet: View {
                     if locked { draft.set(draft.displayed(widthAxis: true), widthAxis: true) }
                 }
             if draft.valid {
-                Text("New: \(Int(draft.width.rounded())) × \(Int(draft.height.rounded())) pixels · \(bytes(Int(draft.width.rounded()), Int(draft.height.rounded()))) uncompressed")
+                Text(L10n.format("New: %lld × %lld pixels · %@ uncompressed",
+                    Int(draft.width.rounded()), Int(draft.height.rounded()),
+                    bytes(Int(draft.width.rounded()), Int(draft.height.rounded()))))
                     .font(.callout).foregroundStyle(.secondary)
             } else {
                 Text("Final dimensions must be 1–30,000 pixels per side.")

@@ -1817,7 +1817,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "新尺寸：%1$lld × %2$lld 像素 · %@未压缩"
+            "value": "新尺寸：%1$lld × %2$lld 像素 · %3$@ 未压缩"
           }
         }
       }

@@ -8,6 +8,57 @@ nonisolated enum L10n {
     }
 
     static func format(_ key: String, _ arguments: CVarArg...) -> String {
-        String(format: text(key), locale: Locale.current, arguments: arguments)
+        let localized = text(key)
+        // Foundation can crash inside CFString formatting when a translation mixes positional and implicit
+        // placeholders. Fall back to the English key rather than letting one malformed catalog entry terminate the app.
+        let format = LocalizationFormatSignature.isCompatible(source: key, translation: localized) ? localized : key
+        return String(format: format, locale: Locale.current, arguments: arguments)
+    }
+}
+
+nonisolated struct LocalizationFormatSignature: Equatable {
+    struct Argument: Equatable {
+        let position: Int
+        let conversion: String
+    }
+
+    let arguments: [Argument]
+    let mixesPositionalAndImplicit: Bool
+
+    static func parse(_ value: String) -> Self {
+        // Exclude the rarely used space/apostrophe printf flags so prose such as "800% and above" is not parsed as `% a`.
+        let pattern = #"%(?!%)(?:(\d+)\$)?[-+0#]*(?:\d+|\*)?(?:\.(?:\d+|\*))?((?:hh|h|ll|l|q|L|z|t|j)?[@diuoxXfFeEgGaAcCsSp])"#
+        guard let expression = try? NSRegularExpression(pattern: pattern) else {
+            return Self(arguments: [], mixesPositionalAndImplicit: false)
+        }
+        let range = NSRange(value.startIndex..<value.endIndex, in: value)
+        var implicitPosition = 0
+        var sawExplicit = false
+        var sawImplicit = false
+        var arguments: [Argument] = []
+        for match in expression.matches(in: value, range: range) {
+            let position: Int
+            if let explicitRange = Range(match.range(at: 1), in: value),
+               let explicit = Int(value[explicitRange]) {
+                position = explicit
+                sawExplicit = true
+            } else {
+                implicitPosition += 1
+                position = implicitPosition
+                sawImplicit = true
+            }
+            guard let conversionRange = Range(match.range(at: 2), in: value) else { continue }
+            arguments.append(Argument(position: position, conversion: String(value[conversionRange])))
+        }
+        arguments.sort {
+            $0.position == $1.position ? $0.conversion < $1.conversion : $0.position < $1.position
+        }
+        return Self(arguments: arguments, mixesPositionalAndImplicit: sawExplicit && sawImplicit)
+    }
+
+    static func isCompatible(source: String, translation: String) -> Bool {
+        let source = parse(source), translation = parse(translation)
+        return !source.mixesPositionalAndImplicit && !translation.mixesPositionalAndImplicit
+            && source.arguments == translation.arguments
     }
 }
