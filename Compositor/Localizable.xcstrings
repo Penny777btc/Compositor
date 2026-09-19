@@ -53,6 +53,17 @@
         }
       }
     },
+    "%@ is not installed in a supported location.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未在支持的位置找到 %@。"
+          }
+        }
+      }
+    },
     "%@ the selection by this many pixels": {
       "extractionState": "stale",
       "localizations": {
@@ -146,6 +157,16 @@
         }
       }
     },
+    "• %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "• %@"
+          }
+        }
+      }
+    },
     "3 by 3 Average": {
       "extractionState": "stale",
       "localizations": {
@@ -184,6 +205,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "为你的下一幅作品准备的空白画布。"
+          }
+        }
+      }
+    },
+    "A canvas already exists, so it was not replaced.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画布已存在，因此没有替换它。"
           }
         }
       }
@@ -337,12 +369,44 @@
         }
       }
     },
+    "AI Edit": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 编辑"
+          }
+        }
+      }
+    },
+    "AI Shape": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 形状"
+          }
+        }
+      }
+    },
     "Aligned": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "对齐"
+          }
+        }
+      }
+    },
+    "Alignment": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "对齐方式"
           }
         }
       }
@@ -409,6 +473,17 @@
         }
       }
     },
+    "Applied: %@": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已应用：%@"
+          }
+        }
+      }
+    },
     "Apply": {
       "localizations": {
         "zh-Hans": {
@@ -439,12 +514,42 @@
         }
       }
     },
+    "Apply Plan": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用计划"
+          }
+        }
+      }
+    },
+    "Apply Text Changes": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用文字修改"
+          }
+        }
+      }
+    },
     "Applying…": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "正在应用…"
+          }
+        }
+      }
+    },
+    "Attach reference image": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加参考图"
           }
         }
       }
@@ -702,7 +807,6 @@
       }
     },
     "Center": {
-      "extractionState": "stale",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
@@ -1205,6 +1309,17 @@
         }
       }
     },
+    "Create a canvas first.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先创建画布。"
+          }
+        }
+      }
+    },
     "Create a canvas or import an image.": {
       "localizations": {
         "zh-Hans": {
@@ -1487,6 +1602,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "停用图层蒙版"
+          }
+        }
+      }
+    },
+    "Discard": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃"
           }
         }
       }
@@ -2098,6 +2223,16 @@
         }
       }
     },
+    "Font": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字体"
+          }
+        }
+      }
+    },
     "Foreground color": {
       "localizations": {
         "zh-Hans": {
@@ -2705,6 +2840,16 @@
         }
       }
     },
+    "Left": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左对齐"
+          }
+        }
+      }
+    },
     "Lens Correction": {
       "extractionState": "stale",
       "localizations": {
@@ -3256,6 +3401,16 @@
         }
       }
     },
+    "New text layer": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建文字图层"
+          }
+        }
+      }
+    },
     "New: %lld × %lld pixels · %@ uncompressed": {
       "localizations": {
         "en": {
@@ -3332,6 +3487,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "好"
+          }
+        }
+      }
+    },
+    "One or more values are invalid.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一个或多个参数无效。"
           }
         }
       }
@@ -3644,6 +3810,16 @@
         }
       }
     },
+    "Proposed Changes": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "建议的修改"
+          }
+        }
+      }
+    },
     "Proximity Match": {
       "extractionState": "stale",
       "localizations": {
@@ -3806,6 +3982,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "红色"
+          }
+        }
+      }
+    },
+    "Reference Image": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "参考图"
           }
         }
       }
@@ -3998,6 +4184,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "反转"
+          }
+        }
+      }
+    },
+    "Right": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "右对齐"
           }
         }
       }
@@ -4384,6 +4580,17 @@
         }
       }
     },
+    "Skipped %@: %@": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已跳过 %@：%@"
+          }
+        }
+      }
+    },
     "Smear": {
       "localizations": {
         "zh-Hans": {
@@ -4561,6 +4768,48 @@
         }
       }
     },
+    "Tell me what you want to create or change. I can operate the canvas and layers with Codex or Claude.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "告诉我你想创建或修改什么。我可以通过 Codex 或 Claude 操作画布和图层。"
+          }
+        }
+      }
+    },
+    "Text": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字"
+          }
+        }
+      }
+    },
+    "Text Layer": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字图层"
+          }
+        }
+      }
+    },
+    "That action is not supported yet.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂不支持该操作。"
+          }
+        }
+      }
+    },
     "That selection is too detailed to outline. Try a different Tolerance, or turn on Contiguous.": {
       "extractionState": "stale",
       "localizations": {
@@ -4579,6 +4828,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "该形状过大。单个形状最多可覆盖 1 亿像素。"
+          }
+        }
+      }
+    },
+    "The AI returned a response that could not be understood.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 返回了无法理解的响应。"
           }
         }
       }
@@ -4623,6 +4883,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "无法读取图像。文件可能已损坏或不可用。"
+          }
+        }
+      }
+    },
+    "The local AI process exited without a response.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地 AI 进程退出，但没有返回响应。"
+          }
+        }
+      }
+    },
+    "The requested layer no longer exists.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请求的图层已不存在。"
           }
         }
       }
@@ -4964,11 +5246,33 @@
       }
     },
     "Uses your local %@ login": {
+      "extractionState": "stale",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "使用本机 %@ 登录状态"
+          }
+        }
+      }
+    },
+    "Uses your local %@ login; prompts and canvas metadata are sent to its model service.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用本机 %@ 登录状态；提示词与画布元数据会发送到相应的模型服务。"
+          }
+        }
+      }
+    },
+    "Uses your local %@ login; prompts, canvas metadata, and attached references are sent to its model service.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用本机 %@ 登录状态；提示词、画布元数据和所附参考图会发送到相应的模型服务。"
           }
         }
       }
@@ -5117,142 +5421,272 @@
         }
       }
     },
-    "%@ is not installed in a supported location.": {
+    "Edit Text Layer": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "未在支持的位置找到 %@。"
+            "value": "编辑文字图层"
           }
         }
       }
     },
-    "A canvas already exists, so it was not replaced.": {
+    "Enter a valid hex color.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "画布已存在，因此没有替换它。"
+            "value": "请输入有效的十六进制颜色。"
           }
         }
       }
     },
-    "AI Edit": {
+    "Exported %lld files to %@.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "AI 编辑"
+            "value": "已将 %1$lld 个文件导出到 %@。"
           }
         }
       }
     },
-    "AI Shape": {
+    "New Text Layer": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "AI 形状"
+            "value": "新建文字图层"
           }
         }
       }
     },
-    "Applied: %@": {
+    "The text layer could not be rendered.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "已应用：%@"
+            "value": "无法渲染文字图层。"
           }
         }
       }
     },
-    "Create a canvas first.": {
+    "The text layer settings are invalid.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "请先创建画布。"
+            "value": "文字图层设置无效。"
           }
         }
       }
     },
-    "One or more values are invalid.": {
+    "This project uses format version %lld. This app supports versions 1–9.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "一个或多个参数无效。"
+            "value": "此项目使用格式版本 %lld。本应用支持版本 1–9。"
           }
         }
       }
     },
-    "Skipped %@: %@": {
+    "Angle": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "已跳过 %@：%@"
+            "value": "角度"
           }
         }
       }
     },
-    "Tell me what you want to create or change. I can operate the canvas and layers with Codex or Claude.": {
+    "Apply Gradient Changes": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "告诉我你想创建或修改什么。我可以通过 Codex 或 Claude 操作画布和图层。"
+            "value": "应用渐变修改"
           }
         }
       }
     },
-    "That action is not supported yet.": {
+    "Center X": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "暂不支持该操作。"
+            "value": "中心 X"
           }
         }
       }
     },
-    "The AI returned a response that could not be understood.": {
+    "Center Y": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "AI 返回了无法理解的响应。"
+            "value": "中心 Y"
           }
         }
       }
     },
-    "The local AI process exited without a response.": {
+    "Colors, e.g. #246BFD, #F43F8C": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "本地 AI 进程退出，但没有返回响应。"
+            "value": "颜色，例如 #246BFD, #F43F8C"
           }
         }
       }
     },
-    "The requested layer no longer exists.": {
+    "Edit Gradient Layer": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "请求的图层已不存在。"
+            "value": "编辑渐变图层"
           }
         }
       }
     },
-    "Uses your local %@ login; prompts and canvas metadata are sent to its model service.": {
+    "Enter 2–12 colors and one matching location for each color.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "使用本机 %@ 登录状态；提示词与画布元数据会发送到相应的模型服务。"
+            "value": "请输入 2–12 个颜色，并为每个颜色填写对应位置。"
+          }
+        }
+      }
+    },
+    "Enter valid hex colors and locations from 0 to 1.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入有效的十六进制颜色和 0 到 1 之间的位置。"
+          }
+        }
+      }
+    },
+    "Font Family": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字体家族"
+          }
+        }
+      }
+    },
+    "Font Style": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字体样式"
+          }
+        }
+      }
+    },
+    "Gradient Layer": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "渐变图层"
+          }
+        }
+      }
+    },
+    "Gradient Type": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "渐变类型"
+          }
+        }
+      }
+    },
+    "Locations, e.g. 0, 1": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置，例如 0, 1"
+          }
+        }
+      }
+    },
+    "New Gradient Layer": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建渐变图层"
+          }
+        }
+      }
+    },
+    "Search Fonts": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索字体"
+          }
+        }
+      }
+    },
+    "The AI plan mixed no_action with editor changes, so nothing was applied.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 计划将 no_action 与编辑操作混在一起，因此未应用任何修改。"
+          }
+        }
+      }
+    },
+    "The AI plan tried to simulate a gradient with shape bands. Use one editable gradient layer instead.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 计划试图用色块模拟渐变，请改用一个可编辑渐变图层。"
+          }
+        }
+      }
+    },
+    "The gradient layer could not be rendered.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法渲染渐变图层。"
+          }
+        }
+      }
+    },
+    "The gradient layer settings are invalid.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "渐变图层设置无效。"
+          }
+        }
+      }
+    },
+    "Your text": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的文字"
           }
         }
       }

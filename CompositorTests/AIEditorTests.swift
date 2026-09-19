@@ -55,4 +55,14 @@ import Testing
         #expect(layer.transform == LayerTransform(origin: CGPoint(x: 12, y: 24),
             size: CGSize(width: 320, height: 180), rotation: 15))
     }
+
+    @Test func noActionDoesNotCreateAnUndoEntry() {
+        let session = EditorSession()
+        session.createDocument(width: 100, height: 100)
+        let count = session.history.undoCount
+        let results = AIEditorEngine.execute(AIEditorPlan(message: "Unsupported",
+            actions: [AIEditorAction(type: "no_action")]), in: session)
+        #expect(results.isEmpty)
+        #expect(session.history.undoCount == count)
+    }
 }

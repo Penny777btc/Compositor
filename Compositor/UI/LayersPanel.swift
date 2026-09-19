@@ -16,6 +16,14 @@ struct LayersPanel: View {
             }.padding(18)
             Divider()
             LayerAppearanceControls(session: session, layerID: session.activeLayerID).id(session.activeLayerID)
+            if let id = session.activeLayerID, session.activeLayer?.liveText != nil {
+                Divider()
+                TextLayerControls(session: session, layerID: id).id(id)
+            }
+            if let id = session.activeLayerID, session.activeLayer?.liveGradient != nil {
+                Divider()
+                GradientLayerControls(session: session, layerID: id).id(id)
+            }
             Divider()
             if let layers = session.document?.layers, !layers.isEmpty {
                 NativeLayerList(session: session)
@@ -35,6 +43,8 @@ struct LayersPanel: View {
                 Button { session.addBlankLayer() } label: { Image(systemName: "plus.square").footerHitArea() }
                     .help("New blank layer (⇧⌘N)").accessibilityLabel("New blank layer")
                     .accessibilityIdentifier("addBlankLayer").disabled(!session.canEditLayers)
+                Button { session.addDefaultTextLayer() } label: { Image(systemName: "textformat").footerHitArea() }
+                    .help("New text layer").accessibilityLabel("New text layer").disabled(!session.canEditLayers)
                 Button { session.groupSelectedLayers() } label: { Image(systemName: "folder.badge.plus").footerHitArea() }
                     .help("Group selected layers (⌘G)").accessibilityLabel("New folder").disabled(!session.canEditLayers)
                 LayerMaskMenu(session: session)

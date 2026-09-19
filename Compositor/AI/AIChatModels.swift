@@ -22,8 +22,23 @@ nonisolated struct AIEditorPlan: Codable, Sendable {
 nonisolated struct AIEditorAction: Codable, Sendable {
     let type: String
     var layerID: String? = nil
+    var layerIDs: [String]? = nil
     var name: String? = nil
+    var text: String? = nil
+    var fontName: String? = nil
+    var fontSize: Double? = nil
+    var alignment: String? = nil
+    var adjustment: String? = nil
+    var mask: String? = nil
+    var position: Int? = nil
+    var variants: [AIExportVariant]? = nil
     var shape: String? = nil
+    var gradient: String? = nil
+    var colors: [String]? = nil
+    var locations: [Double]? = nil
+    var angle: Double? = nil
+    var centerX: Double? = nil
+    var centerY: Double? = nil
     var color: String? = nil
     var width: Double? = nil
     var height: Double? = nil
@@ -33,6 +48,12 @@ nonisolated struct AIEditorAction: Codable, Sendable {
     var opacity: Double? = nil
     var visible: Bool? = nil
     var cornerRadius: Double? = nil
+}
+
+nonisolated struct AIExportVariant: Codable, Sendable {
+    let name: String
+    let width: Int
+    let height: Int
 }
 
 nonisolated enum AIChatError: LocalizedError {
