@@ -197,6 +197,7 @@ final class ProjectWorkspace {
                 return ImageLayer(id: mapping[layer.id]!, asset: layer.asset, name: layer.name, isVisible: layer.isVisible,
                     transform: transform, parentID: layer.parentID.flatMap { mapping[$0] }, isGroup: layer.isGroup,
                     opacity: layer.opacity, blendMode: layer.blendMode, mask: mask, maskSourceID: layer.maskSourceID.flatMap { mapping[$0] }, adjustment: layer.adjustment, shape: layer.shape, text: layer.text, gradient: layer.gradient,
+                    vectorPath: layer.vectorPath,
                     generation: layer.generation)
             }
             target.session.isProjectBusy = false

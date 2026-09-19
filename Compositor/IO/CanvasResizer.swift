@@ -28,6 +28,7 @@ actor CanvasResizer {
                     moved.origin.y += offset.y
                     return moved
                 }, maskLinked: layer.maskLinked, shape: layer.shape, text: layer.text, gradient: layer.gradient,
+                vectorPath: layer.vectorPath,
                 generation: layer.generation))
         }
         var images = snapshot.images

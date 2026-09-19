@@ -1,8 +1,8 @@
-# Compositor project format, versions 1–10
+# Compositor project format, versions 1–11
 
 A `.comp` file is a macOS document package containing `manifest.json` and an `images/` directory of `<layer UUID>.png` assets.
 
-The manifest identifies `com.compositor.project`, version `10` for new saves (versions `1`–`9` remain readable), and the sRGB working space. It stores document UUID, pixel dimensions, active layer UUID, and layers in bottom-to-top order. Each layer stores its UUID, name, visibility, transform (origin, size, clockwise rotation, flips, sampling), and optional image filename. Blank layers have no image asset.
+The manifest identifies `com.compositor.project`, version `11` for new saves (versions `1`–`10` remain readable), and the sRGB working space. It stores document UUID, pixel dimensions, active layer UUID, and layers in bottom-to-top order. Each layer stores its UUID, name, visibility, transform (origin, size, clockwise rotation, flips, sampling), and optional image filename. Blank layers have no image asset.
 
 Embedded PNGs preserve source pixels and transparency; transforms remain separate. Projects survive moving or deleting imported source photos. Saving uses a coordinated atomic package replacement. Unsupported versions, invalid metadata, missing assets, unsafe paths, and oversized data are rejected before replacing the live document.
 
@@ -33,3 +33,5 @@ Version 8 adds optional editable text metadata (`text`, font name and size, colo
 Version 9 adds optional editable smooth-gradient metadata: linear or radial kind, two to twelve sRGB color stops and normalized locations, linear angle, and radial center. The embedded PNG remains the compatibility preview. Resizing or changing gradient settings redraws the layer at its current resolution; pixel editing converts it to an ordinary raster layer. Files declaring versions 1–8 cannot contain gradient metadata.
 
 Version 10 adds optional, non-secret generation provenance to an AI-generated raster layer: Provider and model identifiers, original and revised prompts, design role, reference mode, background/quality choices, and requested dimensions. API keys and reference-image bytes or paths are never written to the project. Files declaring versions 1–9 cannot contain generation metadata.
+
+Version 11 adds editable normalized vector-path metadata: two to 256 points, stroke/fill colors, line width, and whether the path is closed. Its embedded PNG is the compatibility preview; resizing redraws the path at the new resolution. Files declaring versions 1–10 cannot contain vector-path metadata.

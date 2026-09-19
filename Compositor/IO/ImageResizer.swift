@@ -97,6 +97,7 @@ actor ImageResizer {
                 transform: transform, imageFile: layer.imageFile, parentID: layer.parentID, isGroup: layer.isGroup, opacity: layer.opacity, blendMode: layer.blendMode, maskFile: layer.maskFile, maskEnabled: layer.maskEnabled, maskSourceID: layer.maskSourceID, adjustment: layer.adjustment,
                 maskPlacement: layer.maskPlacement.map { $0.placing($0.unitToDocument.concatenating(CGAffineTransform(scaleX: sx, y: sy))) },
                 maskLinked: layer.maskLinked, shape: layer.shape, text: text, gradient: layer.gradient,
+                vectorPath: layer.vectorPath,
                 generation: layer.generation))
         }
         return ProjectSnapshot(manifest: manifest, images: images, masks: masks)
@@ -118,6 +119,7 @@ extension EditorSession {
                 shape: LayerShape.loaded($0.shape, image: snapshot.images[$0.id]?.image),
                 text: LayerText.loaded($0.text, image: snapshot.images[$0.id]?.image),
                 gradient: LayerGradient.loaded($0.gradient, image: snapshot.images[$0.id]?.image),
+                vectorPath: LayerVectorPath.loaded($0.vectorPath, image: snapshot.images[$0.id]?.image),
                 generation: $0.generation) }, resolution: m.resolution ?? 72)
         endEdit()
         viewport.fit(documentSize: document!.size)

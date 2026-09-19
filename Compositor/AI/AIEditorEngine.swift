@@ -25,6 +25,9 @@ enum AIEditorEngine {
             } else if let shape = layer.liveShape?.style {
                 type = "editable_shape"
                 details = " kind=\(shape.kind.rawValue) color=\(shape.color.hex) cornerRadius=\(shape.cornerRadius)"
+            } else if let path = layer.liveVectorPath?.style {
+                type = "editable_path"
+                details = " points=\(path.points.count) stroke=\(path.stroke.palette.hex) lineWidth=\(path.lineWidth) closed=\(path.closed)"
             } else if let generation = layer.generation {
                 type = "generated_image"
                 details = " provider=\(generation.providerID.debugDescription) model=\(generation.model.debugDescription) role=\(generation.role.rawValue) prompt=\(String(generation.prompt.prefix(500)).debugDescription)"
@@ -108,6 +111,30 @@ enum AIEditorEngine {
             session.addPixelLayer(image, at: CGPoint(x: x, y: y),
                 name: name?.isEmpty == false ? name! : session.nextShapeName(kind), editName: "AI Shape",
                 dropsSelection: false, shape: LayerShape(style: style, image: image))
+        case "add_path":
+            guard session.document != nil, let values = action.points, (2...256).contains(values.count) else {
+                throw CommandError.invalidValue
+            }
+            let points = try values.map { value -> CGPoint in
+                guard value.x.isFinite, value.y.isFinite else { throw CommandError.invalidValue }
+                return CGPoint(x: value.x, y: value.y)
+            }
+            guard let minX = points.map(\.x).min(), let maxX = points.map(\.x).max(),
+                  let minY = points.map(\.y).min(), let maxY = points.map(\.y).max() else { throw CommandError.invalidValue }
+            let lineWidth = finite(action.lineWidth) ?? 8
+            guard (0.5...2_000).contains(lineWidth) else { throw CommandError.invalidValue }
+            let padding = max(2, lineWidth / 2 + 2)
+            let frame = CGRect(x: minX - padding, y: minY - padding,
+                width: max(1, maxX - minX + padding * 2), height: max(1, maxY - minY + padding * 2))
+            let normalized = points.map { LayerPathPoint(x: ($0.x - frame.minX) / frame.width,
+                                                         y: ($0.y - frame.minY) / frame.height) }
+            let stroke = try palette(action.strokeColor ?? "#000000")
+            let fill = try action.fillColor.map { try palette($0) }
+            let style = LayerVectorPathStyle(points: normalized,
+                stroke: LayerPathColor(red: stroke.red, green: stroke.green, blue: stroke.blue),
+                fill: fill.map { LayerPathColor(red: $0.red, green: $0.green, blue: $0.blue) },
+                lineWidth: lineWidth, closed: action.closed ?? false)
+            _ = try session.addVectorPathLayer(style: style, frame: frame, name: action.name)
         case "add_gradient":
             guard let document = session.document else { throw CommandError.noCanvas }
             let width = try action.width.map(positive) ?? document.size.width
@@ -165,6 +192,7 @@ enum AIEditorEngine {
             session.document!.layers[index].transform = transform.rounded()
             session.redrawShape(at: index)
             session.redrawGradient(at: index)
+            session.redrawVectorPath(at: index)
             session.selectLayer(id)
         case "duplicate_layer":
             let id = try layerID(action, session: session)
@@ -198,7 +226,7 @@ enum AIEditorEngine {
                 let target = rows[position - 1].layer
                 _ = session.placeLayer(id, in: target.parentID, above: target.id)
             }
-        case "generate_image", "export_variants", "no_action": break
+        case "extract_reference_region", "generate_image", "export_variants", "no_action": break
         default: throw CommandError.unsupported
         }
     }

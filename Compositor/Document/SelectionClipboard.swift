@@ -151,6 +151,7 @@ extension EditorSession {
                               transform: layer.transform, parentID: layer.parentID, isGroup: false,
                               opacity: layer.opacity, blendMode: layer.blendMode, mask: layer.mask, maskSourceID: layer.maskSourceID,
                               adjustment: layer.adjustment, shape: layer.shape, text: layer.text, gradient: layer.gradient,
+                              vectorPath: layer.vectorPath,
                               generation: layer.generation)
         beginEdit("Duplicate Layer")
         document?.layers.insert(copy, at: index + 1)
@@ -177,13 +178,14 @@ extension EditorSession {
     func addPixelLayer(_ image: CGImage, at origin: CGPoint, name: String, editName: String,
                        dropsSelection: Bool = true, shape: LayerShape? = nil, text: LayerText? = nil,
                        gradient: LayerGradient? = nil, displaySize: CGSize? = nil,
-                       generation: LayerGenerationRecord? = nil) {
+                       generation: LayerGenerationRecord? = nil, vectorPath: LayerVectorPath? = nil) {
         guard let document, let thumbnail = try? PixelInvert.thumbnail(of: image) else { return }
         var layer = ImageLayer(asset: ImportedImage(image: image, thumbnail: thumbnail, name: name), origin: origin)
         layer.name = name
         layer.shape = shape
         layer.text = text
         layer.gradient = gradient
+        layer.vectorPath = vectorPath
         layer.generation = generation
         if let displaySize { layer.transform.size = displaySize }
         layer.parentID = activeLayer?.isGroup == true ? activeLayerID : activeLayer?.parentID

@@ -35,6 +35,11 @@ bytes, and local paths are never serialized. If no Provider is configured, reque
 pixels are inserted. The current development build intentionally ships in that state until a Provider and credential
 route are selected.
 
+Project format version 11 also stores editable normalized vector paths for AI-authored arrows, crowns, underlines,
+simple torn-paper outlines, and doodles. Reference-image planning is augmented locally with Apple Vision OCR boxes and
+sampled colors. `extract_reference_region` can preserve an exact supplied screenshot, logo, or product region as its own
+raster layer without a generation Provider.
+
 ## Capability contract
 
 The prompt describes exact semantics and limitations for every command. It explicitly forbids approximating unsupported

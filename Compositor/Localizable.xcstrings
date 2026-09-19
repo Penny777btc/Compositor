@@ -5481,12 +5481,12 @@
         }
       }
     },
-    "This project uses format version %lld. This app supports versions 1–10.": {
+    "This project uses format version %lld. This app supports versions 1–11.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "此项目使用格式版本 %lld。本应用支持版本 1–10。"
+            "value": "此项目使用格式版本 %lld。本应用支持版本 1–11。"
           }
         }
       }
@@ -5877,6 +5877,76 @@
           "stringUnit": {
             "state": "translated",
             "value": "参考图已附加，但 AI 没有返回视觉分析，请重试。"
+          }
+        }
+      }
+    },
+    "Extract Reference Region": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提取参考图区域"
+          }
+        }
+      }
+    },
+    "Extracted reference layer: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已提取参考图图层：%@"
+          }
+        }
+      }
+    },
+    "New Vector Path": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建矢量路径"
+          }
+        }
+      }
+    },
+    "Reference Extract": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "参考图提取"
+          }
+        }
+      }
+    },
+    "The vector path could not be rendered.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法渲染矢量路径。"
+          }
+        }
+      }
+    },
+    "The vector path settings are invalid.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "矢量路径设置无效。"
+          }
+        }
+      }
+    },
+    "Vector Path": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "矢量路径"
           }
         }
       }

@@ -57,7 +57,7 @@ import UniformTypeIdentifiers
         #expect(layer.generation?.revisedPrompt == "A layered paper-cut mountain landscape")
 
         let snapshot = try #require(session.projectSnapshot())
-        #expect(snapshot.manifest.version == 10)
+        #expect(snapshot.manifest.version == 11)
         #expect(snapshot.manifest.layers.last?.generation == layer.generation)
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("CompositorGeneratedImage-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }

@@ -64,10 +64,24 @@ nonisolated struct AIEditorAction: Codable, Sendable {
     var height: Double? = nil
     var x: Double? = nil
     var y: Double? = nil
+    var sourceX: Double? = nil
+    var sourceY: Double? = nil
+    var sourceWidth: Double? = nil
+    var sourceHeight: Double? = nil
+    var points: [AIVectorPoint]? = nil
+    var strokeColor: String? = nil
+    var fillColor: String? = nil
+    var lineWidth: Double? = nil
+    var closed: Bool? = nil
     var rotation: Double? = nil
     var opacity: Double? = nil
     var visible: Bool? = nil
     var cornerRadius: Double? = nil
+}
+
+nonisolated struct AIVectorPoint: Codable, Sendable {
+    let x: Double
+    let y: Double
 }
 
 nonisolated struct AIExportVariant: Codable, Sendable {

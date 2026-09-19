@@ -53,8 +53,11 @@ final class AIChatController {
         task = Task { [weak self] in
             guard let self else { return }
             do {
+                let localReference: AIReferenceLocalAnalysis? = if let reference {
+                    try await ReferenceImageAnalyzer.analyze(reference)
+                } else { nil }
                 let prompt = LocalAgentRunner.prompt(userText: text, history: history, context: context,
-                    hasReferenceImage: reference != nil)
+                    hasReferenceImage: reference != nil, referenceContext: localReference?.promptContext)
                 let scoped = reference?.startAccessingSecurityScopedResource() == true
                 defer { if scoped { reference?.stopAccessingSecurityScopedResource() } }
                 let plan = try await LocalAgentRunner.run(provider: provider, prompt: prompt,
@@ -95,10 +98,19 @@ final class AIChatController {
         guard let plan = pendingPlan else { return }
         pendingVariants = plan.actions.flatMap { $0.variants ?? [] }
         pendingImageActions = plan.actions.filter { $0.type == "generate_image" }
+        let extractionActions = plan.actions.filter { $0.type == "extract_reference_region" }
         let editing = AIEditorPlan(message: plan.message, referenceAnalysis: plan.referenceAnalysis,
-            actions: plan.actions.filter { $0.type != "export_variants" && $0.type != "generate_image" })
+            actions: plan.actions.filter { !["export_variants", "generate_image", "extract_reference_region"].contains($0.type) })
         let results = AIEditorEngine.execute(editing, in: session)
         if !results.isEmpty { messages.append(AIChatMessage(role: .system, text: results.joined(separator: "\n"))) }
+        do {
+            let extracted = try ReferenceRegionExtractor.execute(extractionActions,
+                referenceURL: referenceImageURL, in: session)
+            if !extracted.isEmpty { messages.append(AIChatMessage(role: .system, text: extracted.joined(separator: "\n"))) }
+        } catch {
+            self.error = error.localizedDescription
+            messages.append(AIChatMessage(role: .system, text: error.localizedDescription))
+        }
         pendingPlan = nil
         if !pendingVariants.isEmpty { wantsExportFolder = true }
         if !pendingImageActions.isEmpty { runPendingImages(in: session) }
@@ -380,11 +392,13 @@ private struct PlanPreview: View {
         switch action.type {
         case "create_canvas": return "create_canvas \(number(action.width))×\(number(action.height))"
         case "add_shape": return "add_shape \(action.shape ?? "rectangle") \(number(action.width))×\(number(action.height)) \(action.color ?? "")"
+        case "add_path": return "add_path \(action.points?.count ?? 0) points \(action.strokeColor ?? "")"
         case "add_gradient": return "add_gradient \(action.gradient ?? "linear") \((action.colors ?? []).joined(separator: " → ")) angle \(number(action.angle))°"
         case "edit_gradient": return "edit_gradient \((action.colors ?? []).joined(separator: " → "))"
         case "add_text": return "add_text \(String((action.text ?? "").prefix(32)).debugDescription) \(number(action.fontSize)) pt"
         case "edit_text": return "edit_text \(String((action.text ?? "").prefix(32)).debugDescription)"
         case "generate_image": return "generate_image \(action.imageRole ?? "photo") \(number(action.width))×\(number(action.height)) \(String((action.prompt ?? "").prefix(40)).debugDescription)"
+        case "extract_reference_region": return "extract_reference_region src:(\(number(action.sourceX)),\(number(action.sourceY)),\(number(action.sourceWidth)),\(number(action.sourceHeight)))"
         case "transform_layer": return "transform_layer x:\(number(action.x)) y:\(number(action.y)) w:\(number(action.width)) h:\(number(action.height))"
         case "set_opacity": return "set_opacity \(number(action.opacity))"
         case "set_visibility": return "set_visibility \(action.visible.map { String($0) } ?? "")"
