@@ -5,6 +5,12 @@ nonisolated enum LocalAIProvider: String, CaseIterable, Sendable {
     case claude = "Claude"
 }
 
+nonisolated enum AIReferenceStrategy: String, CaseIterable, Sendable {
+    case fidelity = "High Fidelity"
+    case balanced = "Balanced"
+    case editable = "Editable First"
+}
+
 nonisolated struct AIChatMessage: Identifiable, Sendable {
     enum Role: Sendable { case user, assistant, system }
     let id = UUID()
@@ -43,6 +49,9 @@ nonisolated struct AIEditorAction: Codable, Sendable {
     var text: String? = nil
     var fontName: String? = nil
     var fontSize: Double? = nil
+    var fontWeight: String? = nil
+    var tracking: Double? = nil
+    var fitText: Bool? = nil
     var alignment: String? = nil
     var adjustment: String? = nil
     var mask: String? = nil
@@ -73,6 +82,9 @@ nonisolated struct AIEditorAction: Codable, Sendable {
     var fillColor: String? = nil
     var lineWidth: Double? = nil
     var closed: Bool? = nil
+    var roughness: Double? = nil
+    var seed: Int? = nil
+    var intensity: Double? = nil
     var rotation: Double? = nil
     var opacity: Double? = nil
     var visible: Bool? = nil

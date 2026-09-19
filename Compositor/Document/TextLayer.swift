@@ -14,11 +14,14 @@ nonisolated struct TextLayerStyle: Codable, Equatable, Sendable {
     var blue: CGFloat = 1
     var alignment: TextLayerAlignment = .left
     var boxWidth: CGFloat = 800
+    /// Additional spacing between glyphs. Optional keeps version-8...11 projects source-compatible.
+    var tracking: CGFloat? = nil
     var color: PaletteColor { PaletteColor(red: red, green: green, blue: blue) }
     var isValid: Bool {
         !text.isEmpty && text.utf8.count <= 100_000 && !fontName.isEmpty && fontName.utf8.count <= 1_024
             && fontSize.isFinite && (1...1_000).contains(fontSize)
             && boxWidth.isFinite && (1...30_000).contains(boxWidth)
+            && (tracking.map { $0.isFinite && (-100...1_000).contains($0) } ?? true)
             && [red, green, blue].allSatisfy { $0.isFinite && (0...1).contains($0) }
     }
 }
@@ -79,17 +82,8 @@ extension EditorSession {
 
     static func textImage(_ style: TextLayerStyle) throws -> CGImage {
         guard style.isValid else { throw TextLayerError.invalid }
-        let font = NSFont(name: style.fontName, size: style.fontSize) ?? .systemFont(ofSize: style.fontSize)
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = style.alignment == .center ? .center : style.alignment == .right ? .right : .left
-        paragraph.lineBreakMode = .byWordWrapping
-        let text = NSAttributedString(string: style.text, attributes: [
-            .font: font,
-            .foregroundColor: NSColor(srgbRed: style.red, green: style.green, blue: style.blue, alpha: 1),
-            .paragraphStyle: paragraph,
-        ])
-        let measured = text.boundingRect(with: CGSize(width: style.boxWidth, height: 30_000),
-            options: [.usesLineFragmentOrigin, .usesFontLeading])
+        let text = attributedText(style)
+        let measured = measuredText(style, attributed: text)
         let width = max(1, Int(style.boxWidth.rounded(.up)))
         let height = max(1, Int((measured.height + style.fontSize * 0.2).rounded(.up)))
         let context = try BrushRaster.context(width: width, height: height, mask: false)
@@ -100,6 +94,78 @@ extension EditorSession {
         NSGraphicsContext.restoreGraphicsState()
         guard let image = context.makeImage() else { throw TextLayerError.render }
         return image
+    }
+
+    static func fitTextStyle(_ style: TextLayerStyle, targetHeight: CGFloat) throws -> TextLayerStyle {
+        guard style.isValid, targetHeight.isFinite, (1...30_000).contains(targetHeight) else {
+            throw TextLayerError.invalid
+        }
+        var low: CGFloat = 1, high: CGFloat = 1_000, best: CGFloat = 1
+        for _ in 0..<18 {
+            let size = (low + high) / 2
+            var candidate = style
+            candidate.fontSize = size
+            let measured = measuredText(candidate, attributed: attributedText(candidate))
+            let renderedHeight = measured.height + size * 0.2
+            if renderedHeight <= targetHeight {
+                best = size
+                low = size
+            } else { high = size }
+        }
+        var result = style
+        result.fontSize = max(1, min(1_000, best))
+        return result
+    }
+
+    private static func attributedText(_ style: TextLayerStyle) -> NSAttributedString {
+        let font = NSFont(name: style.fontName, size: style.fontSize) ?? .systemFont(ofSize: style.fontSize)
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = style.alignment == .center ? .center : style.alignment == .right ? .right : .left
+        paragraph.lineBreakMode = .byWordWrapping
+        return NSAttributedString(string: style.text, attributes: [
+            .font: font,
+            .foregroundColor: NSColor(srgbRed: style.red, green: style.green, blue: style.blue, alpha: 1),
+            .paragraphStyle: paragraph,
+            .kern: style.tracking ?? 0,
+        ])
+    }
+
+    private static func measuredText(_ style: TextLayerStyle, attributed: NSAttributedString) -> CGRect {
+        attributed.boundingRect(with: CGSize(width: style.boxWidth, height: 30_000),
+            options: [.usesLineFragmentOrigin, .usesFontLeading])
+    }
+}
+
+@MainActor
+enum InstalledFontResolver {
+    static func resolve(_ requested: String?, weight: String?, text: String) -> String {
+        let fallbackFamily = text.unicodeScalars.contains(where: { $0.value >= 0x2E80 }) ? "PingFang SC" : "Helvetica Neue"
+        let requested = requested?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let family = requested.flatMap { name in
+            NSFont(name: name, size: 12)?.familyName
+                ?? NSFontManager.shared.availableFontFamilies.first(where: {
+                    $0.localizedCaseInsensitiveCompare(name) == .orderedSame
+                })
+        } ?? fallbackFamily
+        let members = NSFontManager.shared.availableMembers(ofFontFamily: family) ?? []
+        guard !members.isEmpty else { return requested ?? fallbackFamily }
+        if weight == nil, let requested,
+           members.contains(where: { ($0.first as? String) == requested }) { return requested }
+        let target: Int = switch weight?.lowercased() {
+        case "medium": 6
+        case "semibold": 8
+        case "bold": 9
+        case "heavy": 11
+        case "black": 13
+        default: 5
+        }
+        return members.compactMap { member -> (name: String, distance: Int, regularPenalty: Int)? in
+            guard member.count >= 3, let name = member[0] as? String, let value = member[2] as? Int else { return nil }
+            let style = (member[1] as? String ?? "").lowercased()
+            return (name, abs(value - target), weight == nil && !style.contains("regular") ? 1 : 0)
+        }.min {
+            ($0.distance, $0.regularPenalty, $0.name) < ($1.distance, $1.regularPenalty, $1.name)
+        }?.name ?? requested ?? family
     }
 }
 

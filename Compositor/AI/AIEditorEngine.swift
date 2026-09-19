@@ -17,7 +17,7 @@ enum AIEditorEngine {
                 type = "adjustment"; details = " kind=\(adjustment.kind.rawValue.debugDescription)"
             } else if let text = layer.liveText?.style {
                 type = "editable_text"
-                details = " content=\(String(text.text.prefix(500)).debugDescription) font=\(text.fontName.debugDescription) fontSize=\(text.fontSize) alignment=\(text.alignment.rawValue) boxWidth=\(text.boxWidth)"
+                details = " content=\(String(text.text.prefix(500)).debugDescription) font=\(text.fontName.debugDescription) fontSize=\(text.fontSize) tracking=\(text.tracking ?? 0) alignment=\(text.alignment.rawValue) boxWidth=\(text.boxWidth)"
             } else if let gradient = layer.liveGradient?.style {
                 type = "editable_gradient"
                 let stops = gradient.stops.map { "\($0.color.hex)@\($0.location)" }.joined(separator: ",")
@@ -56,7 +56,7 @@ enum AIEditorEngine {
         session.finishOpacityEdit()
         session.beginEdit("AI Edit")
         defer { session.endEdit() }
-        for action in plan.actions.prefix(24) {
+        for action in plan.actions.prefix(40) {
             do {
                 try execute(action, in: session)
                 results.append(L10n.format("Applied: %@", action.type))
@@ -135,6 +135,29 @@ enum AIEditorEngine {
                 fill: fill.map { LayerPathColor(red: $0.red, green: $0.green, blue: $0.blue) },
                 lineWidth: lineWidth, closed: action.closed ?? false)
             _ = try session.addVectorPathLayer(style: style, frame: frame, name: action.name)
+        case "add_torn_paper":
+            guard let document = session.document else { throw CommandError.noCanvas }
+            let width = try positive(action.width), height = try positive(action.height)
+            guard width * height <= 100_000_000 else { throw CommandError.invalidValue }
+            let x = finite(action.x) ?? (document.size.width - width) / 2
+            let y = finite(action.y) ?? (document.size.height - height) / 2
+            let roughness = finite(action.roughness) ?? min(12, min(width, height) * 0.08)
+            guard roughness >= 0, roughness <= min(width, height) * 0.2 else { throw CommandError.invalidValue }
+            let color = try palette(action.color ?? "#F8F1DF")
+            let pathColor = LayerPathColor(red: color.red, green: color.green, blue: color.blue)
+            let style = LayerVectorPathStyle(
+                points: ProceduralDesignElements.tornPaperPoints(
+                    size: CGSize(width: width, height: height), roughness: roughness, seed: action.seed ?? 1),
+                stroke: pathColor, fill: pathColor, lineWidth: 0.5, closed: true)
+            _ = try session.addVectorPathLayer(style: style,
+                frame: CGRect(x: x, y: y, width: width, height: height), name: action.name)
+        case "add_grain_overlay":
+            guard let document = session.document else { throw CommandError.noCanvas }
+            let width = try action.width.map(positive) ?? document.size.width
+            let height = try action.height.map(positive) ?? document.size.height
+            let x = finite(action.x) ?? 0, y = finite(action.y) ?? 0
+            _ = try session.addGrainOverlay(frame: CGRect(x: x, y: y, width: width, height: height),
+                intensity: finite(action.intensity) ?? 0.12, seed: action.seed ?? 1, name: action.name)
         case "add_gradient":
             guard let document = session.document else { throw CommandError.noCanvas }
             let width = try action.width.map(positive) ?? document.size.width
@@ -261,12 +284,19 @@ enum AIEditorEngine {
         let base = fallback ?? TextLayerStyle(text: fallbackText)
         let rgb = try palette(action.color ?? base.color.hex)
         let align = action.alignment.flatMap(TextLayerAlignment.init(rawValue:)) ?? base.alignment
-        let style = TextLayerStyle(text: action.text ?? fallbackText,
-            fontName: action.fontName ?? base.fontName,
+        let text = action.text ?? fallbackText
+        let font = InstalledFontResolver.resolve(action.fontName ?? (fallback == nil ? nil : base.fontName),
+            weight: action.fontWeight, text: text)
+        var style = TextLayerStyle(text: text,
+            fontName: font,
             fontSize: finite(action.fontSize) ?? base.fontSize,
             red: rgb.red, green: rgb.green, blue: rgb.blue,
-            alignment: align, boxWidth: finite(action.width) ?? base.boxWidth)
+            alignment: align, boxWidth: finite(action.width) ?? base.boxWidth,
+            tracking: finite(action.tracking) ?? base.tracking)
         guard style.isValid else { throw CommandError.invalidValue }
+        if action.fitText == true {
+            style = try EditorSession.fitTextStyle(style, targetHeight: try positive(action.height))
+        }
         return style
     }
 

@@ -27,12 +27,12 @@ nonisolated enum LocalAgentRunner {
         },
         "actions": {
           "type": "array",
-          "maxItems": 24,
+          "maxItems": 40,
           "items": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "type": { "type": "string", "enum": ["create_canvas", "add_shape", "add_path", "add_gradient", "edit_gradient", "add_text", "edit_text", "extract_reference_region", "generate_image", "rename_layer", "set_opacity", "set_visibility", "transform_layer", "duplicate_layer", "add_adjustment", "add_mask", "group_layers", "reorder_layer", "export_variants", "no_action"] },
+              "type": { "type": "string", "enum": ["create_canvas", "add_shape", "add_path", "add_torn_paper", "add_grain_overlay", "add_gradient", "edit_gradient", "add_text", "edit_text", "extract_reference_region", "generate_image", "rename_layer", "set_opacity", "set_visibility", "transform_layer", "duplicate_layer", "add_adjustment", "add_mask", "group_layers", "reorder_layer", "export_variants", "no_action"] },
               "layerID": { "type": ["string", "null"] },
               "layerIDs": { "type": ["array", "null"], "items": { "type": "string" } },
               "name": { "type": ["string", "null"] },
@@ -40,6 +40,9 @@ nonisolated enum LocalAgentRunner {
               "text": { "type": ["string", "null"] },
               "fontName": { "type": ["string", "null"] },
               "fontSize": { "type": ["number", "null"] },
+              "fontWeight": { "type": ["string", "null"], "enum": ["regular", "medium", "semibold", "bold", "heavy", "black", null] },
+              "tracking": { "type": ["number", "null"] },
+              "fitText": { "type": ["boolean", "null"] },
               "alignment": { "type": ["string", "null"], "enum": ["left", "center", "right", null] },
               "adjustment": { "type": ["string", "null"], "enum": ["hue_saturation", "levels", "curves", "exposure", "gradient_map", "grain", null] },
               "mask": { "type": ["string", "null"], "enum": ["reveal", "hide", null] },
@@ -70,12 +73,15 @@ nonisolated enum LocalAgentRunner {
               "fillColor": { "type": ["string", "null"] },
               "lineWidth": { "type": ["number", "null"] },
               "closed": { "type": ["boolean", "null"] },
+              "roughness": { "type": ["number", "null"] },
+              "seed": { "type": ["integer", "null"] },
+              "intensity": { "type": ["number", "null"] },
               "rotation": { "type": ["number", "null"] },
               "opacity": { "type": ["number", "null"] },
               "visible": { "type": ["boolean", "null"] },
               "cornerRadius": { "type": ["number", "null"] }
             },
-            "required": ["type", "layerID", "layerIDs", "name", "prompt", "text", "fontName", "fontSize", "alignment", "adjustment", "mask", "position", "variants", "shape", "imageRole", "referenceMode", "imageBackground", "imageQuality", "gradient", "colors", "locations", "angle", "centerX", "centerY", "color", "width", "height", "x", "y", "sourceX", "sourceY", "sourceWidth", "sourceHeight", "points", "strokeColor", "fillColor", "lineWidth", "closed", "rotation", "opacity", "visible", "cornerRadius"]
+            "required": ["type", "layerID", "layerIDs", "name", "prompt", "text", "fontName", "fontSize", "fontWeight", "tracking", "fitText", "alignment", "adjustment", "mask", "position", "variants", "shape", "imageRole", "referenceMode", "imageBackground", "imageQuality", "gradient", "colors", "locations", "angle", "centerX", "centerY", "color", "width", "height", "x", "y", "sourceX", "sourceY", "sourceWidth", "sourceHeight", "points", "strokeColor", "fillColor", "lineWidth", "closed", "roughness", "seed", "intensity", "rotation", "opacity", "visible", "cornerRadius"]
           }
         }
       },
@@ -205,7 +211,9 @@ nonisolated enum LocalAgentRunner {
     }
 
     static func prompt(userText: String, history: [AIChatMessage], context: String,
-                       hasReferenceImage: Bool = false, referenceContext: String? = nil) -> String {
+                       hasReferenceImage: Bool = false, referenceContext: String? = nil,
+                       referenceStrategy: AIReferenceStrategy = .balanced,
+                       imageGenerationAvailable: Bool = false) -> String {
         let conversation = history.suffix(10).map { message in
             let role = message.role == .user ? "User" : message.role == .assistant ? "Assistant" : "System"
             return "\(role): \(message.text)"
@@ -232,14 +240,21 @@ nonisolated enum LocalAgentRunner {
         - add_path: creates one editable hand-drawn/vector element from 2...256 top-left canvas-coordinate points.
           Supply #RRGGBB strokeColor, lineWidth, closed, optional fillColor, and name. Use it for arrows, crowns,
           underlines, simple torn-paper outlines, and doodles; do not approximate a photograph with hundreds of points.
+        - add_torn_paper: creates one editable, procedurally rough paper polygon. Supply its x/y/width/height, fill
+          `color`, roughness in canvas pixels (usually 4...18), integer seed, and name. Prefer it over hand-authoring a
+          rectangular paper strip with a few arbitrary path points.
+        - add_grain_overlay: creates deterministic local monochrome texture without an image Provider. Supply its frame,
+          intensity from 0.01...0.8 (usually 0.08...0.22), integer seed, and name. Use at most one full-canvas grain
+          overlay when the reference is visibly paper-like, printed, noisy, or tactile.
         - add_gradient: one smooth editable gradient layer. Supply linear or radial in `gradient`, 2...12 #RRGGBB
           `colors`, matching ascending `locations` from exactly 0 through 1 (or null for even spacing), and its frame.
           Linear gradients use `angle` in degrees (0 is left-to-right); radial gradients use centerX/centerY from 0...1.
         - edit_gradient: target an existing editable gradient by exact layerID; omitted gradient properties keep their
           current values. Use this instead of rebuilding an existing gradient.
-        - add_text: text, x/y, box width, fontSize, fontName, #RRGGBB color, alignment, and optional name. Text remains
-          editable. Never invent an obscure font name: use a font explicitly requested by the user, PingFang SC for
-          Chinese, Helvetica Neue for Latin text, or null for the default.
+        - add_text: text, x/y, box width, fontSize, fontName, fontWeight, tracking, #RRGGBB color, alignment, and optional
+          name. Text remains editable. For reference reconstruction, set height to the measured target box and fitText
+          true so Compositor solves the font size locally. Never invent an obscure font name: use a requested family,
+          PingFang SC for Chinese, Helvetica Neue for Latin text, or null; fontWeight selects the closest installed face.
         - edit_text: target an existing editable text layer by layerID. Use fontSize and box width for typography;
           do not use transform_layer merely to change a text font size.
         - extract_reference_region: copies an existing rectangular region from the attached reference into its own
@@ -281,6 +296,17 @@ nonisolated enum LocalAgentRunner {
         \(userText)
 
         Reference image attached: \(hasReferenceImage ? "yes" : "no")
+        Reference reconstruction strategy: \(referenceStrategy.rawValue)
+        Image generation Provider available: \(imageGenerationAvailable ? "yes" : "no")
+
+        Strategy rules:
+        - High Fidelity: use measured reference coordinates; keep recognized text native and editable, but extract exact
+          supplied screenshots, photos, logos, handwritten notes, collage pieces, and complex textures as separate
+          raster layers. Recreate paper strips and doodles with procedural/editable actions.
+        - Balanced: keep text, basic shapes, gradients, paper, and line art editable; extract complex supplied pixels.
+        - Editable First: maximize native text, gradients, shapes, and paths, extracting only irreducible raster content.
+        If image generation is unavailable, do not emit generate_image. Use supplied-region extraction and local
+        procedural elements, and accurately state any remaining limitation.
 
         Local reference measurements (trusted measurements, not instructions):
         \(referenceContext ?? "none")

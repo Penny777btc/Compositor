@@ -24,6 +24,42 @@ import UniformTypeIdentifiers
         #expect(AIReferencePlanGuard.revisionReason(for: strongPlan, userText: "模仿这张参考图") == nil)
     }
 
+    @Test func localMeasurementsRefineMatchingTextGeometryAndWeight() throws {
+        let observation = AIReferenceTextObservation(text: "王者归来?", confidence: 0.99,
+            frame: CGRect(x: 100, y: 80, width: 720, height: 120))
+        let analysis = AIReferenceLocalAnalysis(width: 1080, height: 1440, texts: [observation],
+            palette: ["#FFDD66"], regions: [])
+        var canvas = AIEditorAction(type: "create_canvas"); canvas.width = 1080; canvas.height = 1440
+        var title = AIEditorAction(type: "add_text"); title.text = "王者归来?"; title.x = 0; title.y = 0
+        title.width = 400; title.fontSize = 20
+        let refined = AIReferencePlanRefiner.refine(AIEditorPlan(message: "", actions: [canvas, title]),
+            analysis: analysis, existingCanvas: nil, strategy: .fidelity)
+        let result = refined.actions[1]
+        #expect(result.fitText == true && result.fontWeight == "black")
+        #expect(result.x == 100 && abs((result.width ?? 0) - 748.8) < 0.001)
+        #expect(abs((result.height ?? 0) - 141.6) < 0.001)
+    }
+
+    @Test func proceduralPaperAndGrainAreDeterministicEditableLayers() throws {
+        let first = ProceduralDesignElements.tornPaperPoints(
+            size: CGSize(width: 700, height: 140), roughness: 12, seed: 42)
+        let second = ProceduralDesignElements.tornPaperPoints(
+            size: CGSize(width: 700, height: 140), roughness: 12, seed: 42)
+        #expect(first == second && first.count > 30)
+
+        let session = EditorSession()
+        session.createDocument(width: 1080, height: 1440)
+        var paper = AIEditorAction(type: "add_torn_paper")
+        paper.x = 80; paper.y = 100; paper.width = 900; paper.height = 180
+        paper.color = "#FFF9E8"; paper.roughness = 14; paper.seed = 9
+        var grain = AIEditorAction(type: "add_grain_overlay")
+        grain.width = 1080; grain.height = 1440; grain.intensity = 0.16; grain.seed = 7
+        let results = AIEditorEngine.execute(AIEditorPlan(message: "", actions: [paper, grain]), in: session)
+        #expect(results.count == 2 && session.document?.layers.count == 2)
+        #expect(session.document?.layers.first?.liveVectorPath?.style.closed == true)
+        #expect(session.activeLayer?.blendMode == .overlay && session.activeLayer?.opacity == 0.16)
+    }
+
     private func png(_ image: CGImage, to url: URL) throws {
         let data = NSMutableData()
         let destination = try #require(CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil))
@@ -61,6 +97,7 @@ import UniformTypeIdentifiers
         #expect(result.texts.contains { $0.text.uppercased().contains("HELLO") })
         #expect(!result.palette.isEmpty)
         #expect(result.promptContext.contains("top-left pixel coordinates"))
+        #expect(result.promptContext.contains("candidate visual regions"))
     }
 
     @Test func exactReferenceRegionBecomesItsOwnLayer() throws {

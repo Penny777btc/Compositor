@@ -10,8 +10,11 @@ thread when available, with the restricted one-shot CLI path as a fallback.
 - create a transparent canvas
 - add editable rectangle, rounded-rectangle, and ellipse shape layers
 - add and edit native editable text layers
+- resolve an installed font face by requested weight, apply tracking, and fit reconstructed text to measured OCR bounds
 - add and edit smooth linear or radial gradient layers with two to twelve color stops
 - analyze an attached reference into style, palette, composition, and a layer reconstruction strategy
+- detect local OCR boxes plus candidate rectangle/saliency regions with Apple Vision
+- add deterministic editable torn-paper polygons and local grain overlays without an image Provider
 - plan Provider-neutral generated background, photo, illustration, texture, and transparent-element layers
 - rename, duplicate, move, resize, rotate, reorder, and group layers by stable UUID
 - change layer opacity and visibility
@@ -40,6 +43,10 @@ simple torn-paper outlines, and doodles. Reference-image planning is augmented l
 sampled colors. `extract_reference_region` can preserve an exact supplied screenshot, logo, or product region as its own
 raster layer without a generation Provider. A reference-fidelity guard rejects text-and-background-only plans when the
 model's own analysis names major raster or hand-drawn elements, then automatically requests one corrected plan.
+High Fidelity, Balanced, and Editable First strategies let the user choose how aggressively exact reference pixels are
+reused. In High Fidelity and Balanced modes, native OCR-matching text is deterministically aligned and auto-fitted after
+the model plans semantic layers. When no image Provider is configured, reference plans discard `generate_image` actions
+and require extraction or local procedural alternatives instead.
 
 ## Capability contract
 

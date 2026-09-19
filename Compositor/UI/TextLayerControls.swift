@@ -115,6 +115,7 @@ struct TextLayerControls: View {
     @State private var fontName: String
     @State private var fontSize: Double
     @State private var width: Double
+    @State private var tracking: Double
     @State private var color: String
     @State private var alignment: TextLayerAlignment
     @State private var error: String?
@@ -129,6 +130,7 @@ struct TextLayerControls: View {
         _fontName = State(initialValue: style.fontName)
         _fontSize = State(initialValue: Double(style.fontSize))
         _width = State(initialValue: Double(style.boxWidth))
+        _tracking = State(initialValue: Double(style.tracking ?? 0))
         _color = State(initialValue: style.color.hex)
         _alignment = State(initialValue: style.alignment)
     }
@@ -159,6 +161,10 @@ struct TextLayerControls: View {
                 TextField("Width", value: $width, format: .number)
                 TextField("Color", text: $color).textCase(.uppercase)
             }
+            HStack {
+                Text("Tracking").font(.caption).foregroundStyle(.secondary)
+                TextField("Tracking", value: $tracking, format: .number).frame(width: 76)
+            }
             Picker("Alignment", selection: $alignment) {
                 Text("Left").tag(TextLayerAlignment.left)
                 Text("Center").tag(TextLayerAlignment.center)
@@ -180,7 +186,8 @@ struct TextLayerControls: View {
     private func apply() {
         guard let rgb = PaletteColor(hex: color) else { error = L10n.text("Enter a valid hex color."); return }
         let style = TextLayerStyle(text: text, fontName: fontName, fontSize: CGFloat(fontSize),
-            red: rgb.red, green: rgb.green, blue: rgb.blue, alignment: alignment, boxWidth: CGFloat(width))
+            red: rgb.red, green: rgb.green, blue: rgb.blue, alignment: alignment, boxWidth: CGFloat(width),
+            tracking: CGFloat(tracking))
         do { try session.updateTextLayer(layerID, style: style); error = nil }
         catch { self.error = error.localizedDescription }
     }

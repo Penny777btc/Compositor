@@ -26,6 +26,20 @@ import Testing
         #expect(reopened.activeLayer?.liveText?.style == edited)
     }
 
+    @Test func aiTextCanResolveWeightTrackingAndFitAReferenceBox() throws {
+        let session = EditorSession()
+        session.createDocument(width: 1080, height: 1440)
+        var action = AIEditorAction(type: "add_text")
+        action.text = "Gemini 4"; action.fontName = "Helvetica Neue"; action.fontWeight = "black"
+        action.width = 760; action.height = 150; action.fitText = true; action.tracking = -2
+        action.x = 100; action.y = 80; action.color = "#05070A"
+        _ = AIEditorEngine.execute(AIEditorPlan(message: "", actions: [action]), in: session)
+        let style = try #require(session.activeLayer?.liveText?.style)
+        #expect(style.fontName.lowercased().contains("black") || style.fontName.lowercased().contains("heavy"))
+        #expect(style.tracking == -2 && style.fontSize > 20)
+        #expect(session.activeLayer?.transform.size.height ?? 10_000 <= 151)
+    }
+
     @Test func batchVariantsSaveEditableProjectsAndPNGs() async throws {
         let session = EditorSession()
         session.createDocument(width: 1200, height: 628)

@@ -5961,6 +5961,86 @@
         }
       }
     },
+    "Add Paper Grain": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加纸张颗粒"
+          }
+        }
+      }
+    },
+    "Balanced": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "平衡"
+          }
+        }
+      }
+    },
+    "Editable First": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可编辑优先"
+          }
+        }
+      }
+    },
+    "High Fidelity": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高度还原"
+          }
+        }
+      }
+    },
+    "Paper Grain": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "纸张颗粒"
+          }
+        }
+      }
+    },
+    "Reconstruction": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还原策略"
+          }
+        }
+      }
+    },
+    "Reference reconstruction strategy": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "参考图还原策略"
+          }
+        }
+      }
+    },
+    "Tracking": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字距"
+          }
+        }
+      }
+    },
     "Your text": {
       "localizations": {
         "zh-Hans": {

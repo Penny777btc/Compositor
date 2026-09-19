@@ -9,15 +9,28 @@ nonisolated struct AIReferenceTextObservation: Sendable, Equatable {
     let frame: CGRect
 }
 
+nonisolated struct AIReferenceRegionObservation: Sendable, Equatable {
+    let kind: String
+    let confidence: Float
+    /// Candidate pixel bounds with a top-left origin. These are geometry hints, not semantic guarantees.
+    let frame: CGRect
+}
+
 nonisolated struct AIReferenceLocalAnalysis: Sendable, Equatable {
     let width: Int
     let height: Int
     let texts: [AIReferenceTextObservation]
     let palette: [String]
+    let regions: [AIReferenceRegionObservation]
 
     var promptContext: String {
         let textRows = texts.prefix(80).enumerated().map { index, item in
             "\(index + 1). text=\(item.text.debugDescription) confidence=\(String(format: "%.3f", item.confidence)) "
+                + "frame=(x:\(Int(item.frame.minX.rounded())),y:\(Int(item.frame.minY.rounded())),"
+                + "w:\(Int(item.frame.width.rounded())),h:\(Int(item.frame.height.rounded())))"
+        }.joined(separator: "\n")
+        let regionRows = regions.prefix(32).enumerated().map { index, item in
+            "\(index + 1). kind=\(item.kind) confidence=\(String(format: "%.3f", item.confidence)) "
                 + "frame=(x:\(Int(item.frame.minX.rounded())),y:\(Int(item.frame.minY.rounded())),"
                 + "w:\(Int(item.frame.width.rounded())),h:\(Int(item.frame.height.rounded())))"
         }.joined(separator: "\n")
@@ -26,6 +39,8 @@ nonisolated struct AIReferenceLocalAnalysis: Sendable, Equatable {
         Locally sampled palette: \(palette.joined(separator: ", "))
         Local OCR observations (top-left pixel coordinates):
         \(textRows.isEmpty ? "none" : textRows)
+        Local candidate visual regions (top-left pixel coordinates; verify against the attached image):
+        \(regionRows.isEmpty ? "none" : regionRows)
         """
     }
 }
@@ -43,8 +58,16 @@ nonisolated enum ReferenceImageAnalyzer {
             request.recognitionLevel = .accurate
             request.usesLanguageCorrection = true
             request.minimumTextHeight = 0.006
+            let rectangles = VNDetectRectanglesRequest()
+            rectangles.maximumObservations = 32
+            rectangles.minimumConfidence = 0.35
+            rectangles.minimumSize = 0.04
+            rectangles.minimumAspectRatio = 0.15
+            rectangles.maximumAspectRatio = 1
+            rectangles.quadratureTolerance = 18
+            let saliency = VNGenerateAttentionBasedSaliencyImageRequest()
             let handler = VNImageRequestHandler(cgImage: image, orientation: .up)
-            try handler.perform([request])
+            try handler.perform([request, rectangles, saliency])
             let texts = (request.results ?? []).compactMap { observation -> AIReferenceTextObservation? in
                 guard let candidate = observation.topCandidates(1).first else { return nil }
                 let box = observation.boundingBox
@@ -56,9 +79,42 @@ nonisolated enum ReferenceImageAnalyzer {
                 if abs(left.frame.minY - right.frame.minY) > 4 { return left.frame.minY < right.frame.minY }
                 return left.frame.minX < right.frame.minX
             }
+            let rectangleRegions = (rectangles.results ?? []).map {
+                AIReferenceRegionObservation(kind: "rectangle", confidence: $0.confidence,
+                    frame: pixelFrame($0.boundingBox, width: image.width, height: image.height))
+            }
+            let salientRegions = (saliency.results?.first?.salientObjects ?? []).map {
+                AIReferenceRegionObservation(kind: "salient", confidence: $0.confidence,
+                    frame: pixelFrame($0.boundingBox, width: image.width, height: image.height))
+            }
+            let candidates = deduplicated(rectangleRegions + salientRegions,
+                imageWidth: image.width, imageHeight: image.height)
             return AIReferenceLocalAnalysis(width: image.width, height: image.height,
-                texts: texts, palette: try palette(image))
+                texts: texts, palette: try palette(image), regions: candidates)
         }.value
+    }
+
+    private static func pixelFrame(_ box: CGRect, width: Int, height: Int) -> CGRect {
+        CGRect(x: box.minX * CGFloat(width), y: (1 - box.maxY) * CGFloat(height),
+            width: box.width * CGFloat(width), height: box.height * CGFloat(height))
+    }
+
+    private static func deduplicated(_ input: [AIReferenceRegionObservation],
+                                     imageWidth: Int, imageHeight: Int) -> [AIReferenceRegionObservation] {
+        let imageArea = CGFloat(imageWidth * imageHeight)
+        var output: [AIReferenceRegionObservation] = []
+        for candidate in input.sorted(by: { $0.frame.width * $0.frame.height > $1.frame.width * $1.frame.height }) {
+            let area = candidate.frame.width * candidate.frame.height
+            guard area >= imageArea * 0.002, area <= imageArea * 0.82 else { continue }
+            let duplicate = output.contains { existing in
+                let intersection = existing.frame.intersection(candidate.frame)
+                guard !intersection.isNull else { return false }
+                let overlap = intersection.width * intersection.height
+                return overlap / min(area, existing.frame.width * existing.frame.height) > 0.82
+            }
+            if !duplicate { output.append(candidate) }
+        }
+        return output
     }
 
     private static func palette(_ image: CGImage) throws -> [String] {

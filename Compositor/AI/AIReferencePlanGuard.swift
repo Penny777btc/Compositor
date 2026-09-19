@@ -25,7 +25,7 @@ nonisolated enum AIReferencePlanGuard {
             (plan.referenceAnalysis?.layerStrategy ?? [])).joined(separator: " ").lowercased()
         let types = Set(plan.actions.map(\.type))
         let hasRasterAction = !types.isDisjoint(with: ["extract_reference_region", "generate_image"])
-        let hasPathAction = types.contains("add_path")
+        let hasPathAction = types.contains("add_path") || types.contains("add_torn_paper")
         var issues: [String] = []
 
         if rasterCues.contains(where: strategy.contains), !hasRasterAction {
@@ -54,7 +54,8 @@ nonisolated enum AIReferencePlanGuard {
         Return a complete replacement plan. Convert every prominent non-text region from the reference analysis into an
         actual action. For exact supplied screenshots, logos, product images, or collage pieces, use
         extract_reference_region with measured source pixel rectangles and individual target frames. Do not extract the
-        whole poster as one flattened layer. For arrows, crowns, underlines, and doodles, use add_path. Use generate_image
+        whole poster as one flattened layer. For paper strips use add_torn_paper; for arrows, crowns, underlines, and
+        doodles, use add_path. Use generate_image
         only for genuinely missing pixels that cannot be extracted from the supplied reference. Keep all typography as
         native editable text. A reference reconstruction may not be a text-and-background-only plan when the reference
         visibly contains other major elements.

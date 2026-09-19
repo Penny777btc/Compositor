@@ -99,10 +99,15 @@ import UniformTypeIdentifiers
         _ = try JSONSerialization.jsonObject(with: data)
         #expect(LocalAgentRunner.schema.contains("referenceAnalysis"))
         #expect(LocalAgentRunner.schema.contains("generate_image"))
+        #expect(LocalAgentRunner.schema.contains("add_torn_paper"))
+        #expect(LocalAgentRunner.schema.contains("add_grain_overlay"))
+        #expect(LocalAgentRunner.schema.contains("fontWeight"))
         let prompt = LocalAgentRunner.prompt(userText: "Rebuild this design", history: [], context: "Canvas: none",
-            hasReferenceImage: true)
+            hasReferenceImage: true, referenceStrategy: .fidelity, imageGenerationAvailable: false)
         #expect(prompt.contains("Reference image attached: yes"))
         #expect(prompt.contains("Never bake text"))
+        #expect(prompt.contains("High Fidelity"))
+        #expect(prompt.contains("do not emit generate_image"))
     }
 
     @Test func localAgentSearchesHomebrewAppBundlesAndPath() {

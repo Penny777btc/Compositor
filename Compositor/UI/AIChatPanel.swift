@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 @MainActor @Observable
 final class AIChatController {
     var provider: LocalAIProvider = .codex
+    var referenceStrategy: AIReferenceStrategy = .fidelity
     var draft = ""
     var messages: [AIChatMessage] = [
         AIChatMessage(role: .assistant, text: L10n.text("Tell me what you want to create or change. I can operate the canvas and layers with Codex or Claude."))
@@ -47,7 +48,9 @@ final class AIChatController {
         let attachment = reference.map { AIChatAttachment(name: referenceImageName ?? $0.lastPathComponent, cachedURL: $0) }
         messages.append(AIChatMessage(role: .user, text: text, attachment: attachment))
         let provider = provider
+        let imageGenerationAvailable = isImageProviderConfigured
         let context = AIEditorEngine.context(for: session)
+        let existingCanvas = session.document?.size
         isRunning = true
         activeRequestHasReference = reference != nil
         task = Task { [weak self] in
@@ -57,13 +60,19 @@ final class AIChatController {
                     try await ReferenceImageAnalyzer.analyze(reference)
                 } else { nil }
                 let prompt = LocalAgentRunner.prompt(userText: text, history: history, context: context,
-                    hasReferenceImage: reference != nil, referenceContext: localReference?.promptContext)
+                    hasReferenceImage: reference != nil, referenceContext: localReference?.promptContext,
+                    referenceStrategy: referenceStrategy,
+                    imageGenerationAvailable: imageGenerationAvailable)
                 let scoped = reference?.startAccessingSecurityScopedResource() == true
                 defer { if scoped { reference?.stopAccessingSecurityScopedResource() } }
                 var plan = try await LocalAgentRunner.run(provider: provider, prompt: prompt,
                     referenceImage: reference)
                 guard !Task.isCancelled else { return }
                 if reference != nil, plan.referenceAnalysis == nil { throw AIChatError.referenceNotAnalyzed }
+                if reference != nil, !imageGenerationAvailable {
+                    plan = AIEditorPlan(message: plan.message, referenceAnalysis: plan.referenceAnalysis,
+                        actions: plan.actions.filter { $0.type != "generate_image" })
+                }
                 if reference != nil,
                    let reason = AIReferencePlanGuard.revisionReason(for: plan, userText: text) {
                     let revisionPrompt = AIReferencePlanGuard.revisionPrompt(
@@ -72,9 +81,17 @@ final class AIChatController {
                         referenceImage: reference)
                     guard !Task.isCancelled else { return }
                     if plan.referenceAnalysis == nil { throw AIChatError.referenceNotAnalyzed }
+                    if !imageGenerationAvailable {
+                        plan = AIEditorPlan(message: plan.message, referenceAnalysis: plan.referenceAnalysis,
+                            actions: plan.actions.filter { $0.type != "generate_image" })
+                    }
                     if AIReferencePlanGuard.revisionReason(for: plan, userText: text) != nil {
                         throw AIChatError.referencePlanIncomplete
                     }
+                }
+                if let localReference {
+                    plan = AIReferencePlanRefiner.refine(plan, analysis: localReference,
+                        existingCanvas: existingCanvas, strategy: referenceStrategy)
                 }
                 pendingPlan = plan
                 messages.append(AIChatMessage(role: .assistant, text: plan.message))
@@ -279,6 +296,14 @@ struct AIChatPanel: View {
                         Button { controller.clearReferenceImage() } label: { Image(systemName: "xmark.circle.fill") }
                             .buttonStyle(.plain)
                     }
+                    Picker("Reconstruction", selection: $controller.referenceStrategy) {
+                        ForEach(AIReferenceStrategy.allCases, id: \.self) { strategy in
+                            Text(L10n.text(strategy.rawValue)).tag(strategy)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .help("Reference reconstruction strategy")
                 }
                 TextField("Describe what to create or change", text: $controller.draft, axis: .vertical)
                     .lineLimit(1...5).textFieldStyle(.plain).focused($inputFocused)
@@ -387,7 +412,7 @@ private struct PlanPreview: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            ForEach(Array(plan.actions.prefix(24).enumerated()), id: \.offset) { _, action in
+            ForEach(Array(plan.actions.prefix(40).enumerated()), id: \.offset) { _, action in
                 Text("• \(summary(action))").font(.caption.monospaced())
             }
             HStack {
@@ -405,6 +430,8 @@ private struct PlanPreview: View {
         case "create_canvas": return "create_canvas \(number(action.width))×\(number(action.height))"
         case "add_shape": return "add_shape \(action.shape ?? "rectangle") \(number(action.width))×\(number(action.height)) \(action.color ?? "")"
         case "add_path": return "add_path \(action.points?.count ?? 0) points \(action.strokeColor ?? "")"
+        case "add_torn_paper": return "add_torn_paper \(number(action.width))×\(number(action.height)) roughness \(number(action.roughness))"
+        case "add_grain_overlay": return "add_grain_overlay intensity \(number(action.intensity))"
         case "add_gradient": return "add_gradient \(action.gradient ?? "linear") \((action.colors ?? []).joined(separator: " → ")) angle \(number(action.angle))°"
         case "edit_gradient": return "edit_gradient \((action.colors ?? []).joined(separator: " → "))"
         case "add_text": return "add_text \(String((action.text ?? "").prefix(32)).debugDescription) \(number(action.fontSize)) pt"
