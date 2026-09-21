@@ -261,6 +261,7 @@ struct ContentView: View {
                         if tool == .gradient { GradientToolIcon().frame(width: 18, height: 18) }
                         else if tool == .cloneStamp { CloneStampToolIcon().frame(width: 18, height: 18) }
                         else if tool == .lasso, session.lassoKind == .polygonal { PolygonalLassoToolIcon().frame(width: 18, height: 18) }
+                        else if tool == .wand, session.wandMode == .object { ObjectSelectionToolIcon().frame(width: 18, height: 18) }
                         // The Marquee's icon follows its shape: a dashed circle in Ellipse mode.
                         else { Image(systemName: tool == .marquee && session.marqueeKind == .ellipse ? "circle.dashed" : session.symbol(for: tool)).font(.system(size: 17)) }
                     }
@@ -322,7 +323,9 @@ struct ContentView: View {
                 ? "Drag an ellipse · Shift add · Option subtract · Shift again mid-drag circle · Drag inside to move · Delete clears · ⌘D deselect"
                 : "Drag a rectangle · Shift add · Option subtract · Shift again mid-drag square · Drag inside to move · ⌘-drag moves pixels · Delete clears · ⌘D deselect")
         case .wand:
-            return L10n.text("Click to select similar colors · Shift add · Option subtract · Drag inside to move · ⌘-drag moves pixels · Delete clears · ⌘D deselect")
+            return L10n.text(session.wandMode == .object
+                ? "Click an object to select its outline · Tab for Wand · Shift add · Option subtract · Drag inside to move · ⌘-drag moves pixels · Delete clears · ⌘D deselect"
+                : "Click to select similar colors · Tab for Object · Shift add · Option subtract · Drag inside to move · ⌘-drag moves pixels · Delete clears · ⌘D deselect")
         case .lasso:
             return L10n.text(session.lassoKind == .freehand
                 ? "Drag to select · Drag inside to move · Shift add · Option subtract · Delete clears · ⌥⌫/⌘⌫ fill · ⌘D deselect"

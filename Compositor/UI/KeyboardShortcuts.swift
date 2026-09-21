@@ -99,7 +99,7 @@ struct ShortcutDefinition: Identifiable {
         for (title, key) in [("Select tool", "a"), ("Move / Transform tool", "v"), ("Hand tool", "h"),
             ("Zoom tool", "z"), ("Brush tool", "b"), ("Eraser", "e"), ("Spot Healing", "j"),
             ("Clone Stamp", "s"), ("Type tool", "t"), ("Gradient tool", "g"), ("Shape tool", "u"),
-            ("Eyedropper tool", "i"), ("Marquee / cycle shape", "m"), ("Magic Wand", "w"),
+            ("Eyedropper tool", "i"), ("Marquee / cycle shape", "m"), ("Magic", "w"),
             ("Lasso / cycle mode", "l"), ("Blur / Smudge / Liquify", "r"), ("Crop tool", "c"),
             ("Swap foreground/background", "x"), ("Reset colors", "d"), ("Cycle tool mode", "\t"),
             ("Temporary Hand tool (hold)", " "), ("Delete selection / layer / effect / lasso point", "\u{7f}"),

@@ -154,6 +154,16 @@
         }
       }
     },
+    "45°": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "45°"
+          }
+        }
+      }
+    },
     "5 by 5 Average": {
       "localizations": {
         "zh-Hans": {
@@ -360,6 +370,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "项目中的图像缺失或损坏。当前文档未被替换。"
+          }
+        }
+      }
+    },
+    "Analyze the active layer only, or every visible layer as shown": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅分析当前图层，或分析画面中显示的所有可见图层"
           }
         }
       }
@@ -944,6 +964,16 @@
         }
       }
     },
+    "Color Picker (%@ Color)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "颜色选择器（%@颜色）"
+          }
+        }
+      }
+    },
     "Color Picker (Background Color)": {
       "localizations": {
         "zh-Hans": {
@@ -980,6 +1010,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "颜色选择器（渐变映射阴影）"
+          }
+        }
+      }
+    },
+    "Color Picker (Text Color)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "颜色选择器（文字颜色）"
           }
         }
       }
@@ -1490,6 +1530,16 @@
         }
       }
     },
+    "Drag a text box · Click text to edit · Drag box handles to resize · ⌘Return finish · Escape cancel": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拖动创建文本框 · 点击文字进行编辑 · 拖动文本框控制柄调整大小 · ⌘Return 完成 · Escape 取消"
+          }
+        }
+      }
+    },
     "Drag an ellipse · Shift add · Option subtract · Shift again mid-drag circle · Drag inside to move · Delete clears · ⌘D deselect": {
       "localizations": {
         "zh-Hans": {
@@ -1536,6 +1586,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "在新图层上拖动绘制形状 · Shift %@ · Option 从中心绘制 · Shift-U 切换为%@ · Escape 取消 · 按住空格键平移"
+          }
+        }
+      }
+    },
+    "Drag to draw a shape on a new layer · Shift %@ · Option from center · Shift-U or Tab for the next shape · Escape cancel · Space to pan": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拖动在新图层上绘制形状 · Shift %@ · Option 从中心绘制 · Shift-U 或 Tab 切换下一个形状 · Escape 取消 · 空格键平移"
           }
         }
       }
@@ -1680,6 +1740,16 @@
         }
       }
     },
+    "Edge": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "边缘"
+          }
+        }
+      }
+    },
     "Edit %@ Adjustment": {
       "localizations": {
         "zh-Hans": {
@@ -1706,6 +1776,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "编辑文字"
+          }
+        }
+      }
+    },
+    "Editable text layer": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可编辑文字图层"
           }
         }
       }
@@ -1846,6 +1926,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "导出 JPEG…"
+          }
+        }
+      }
+    },
+    "Export PNG": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出 PNG"
           }
         }
       }
@@ -2796,6 +2886,16 @@
         }
       }
     },
+    "Levels": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "色阶"
+          }
+        }
+      }
+    },
     "Levels…": {
       "localizations": {
         "zh-Hans": {
@@ -2972,6 +3072,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "洋红色"
+          }
+        }
+      }
+    },
+    "Magic": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智能选择"
           }
         }
       }
@@ -3682,6 +3792,16 @@
         }
       }
     },
+    "Positive values tighten the detected mask inward; negative values expand it outward": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正值会向内收紧检测蒙版；负值会向外扩展蒙版"
+          }
+        }
+      }
+    },
     "Press 1–9 for 10–90%, 0 for 100%": {
       "localizations": {
         "zh-Hans": {
@@ -3708,6 +3828,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "按 M 在矩形和椭圆之间切换"
+          }
+        }
+      }
+    },
+    "Press Tab to switch between Wand and Object": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按 Tab 在魔棒与对象模式之间切换"
           }
         }
       }
@@ -4318,6 +4448,16 @@
         }
       }
     },
+    "Select text: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择文字：%@"
+          }
+        }
+      }
+    },
     "Selected": {
       "localizations": {
         "zh-Hans": {
@@ -4508,6 +4648,16 @@
         }
       }
     },
+    "Smooth the detected object outline; turn off for the raw pixel mask": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "平滑检测到的对象轮廓；关闭后使用原始像素蒙版"
+          }
+        }
+      }
+    },
     "Smudge": {
       "localizations": {
         "zh-Hans": {
@@ -4644,6 +4794,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "目标调整：在图像上拖动以更改该颜色的饱和度；按住 Command 拖动可更改色相"
+          }
+        }
+      }
+    },
+    "Text": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字"
           }
         }
       }
@@ -4808,6 +4968,16 @@
         }
       }
     },
+    "This project uses format version %lld. This app supports versions 1–8.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此项目使用格式版本 %lld。本应用支持版本 1–8。"
+          }
+        }
+      }
+    },
     "Tolerance": {
       "localizations": {
         "zh-Hans": {
@@ -4914,6 +5084,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "类型"
+          }
+        }
+      }
+    },
+    "Type (T)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字工具 (T)"
           }
         }
       }
@@ -5208,6 +5388,16 @@
         }
       }
     },
+    "line": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直线"
+          }
+        }
+      }
+    },
     "pixels/inch": {
       "localizations": {
         "zh-Hans": {
@@ -5258,132 +5448,12 @@
         }
       }
     },
-    "45°": {
+    "Magic (W) · Tab switches Wand and Object": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "45°"
-          }
-        }
-      }
-    },
-    "Color Picker (%@ Color)": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "颜色选择器（%@颜色）"
-          }
-        }
-      }
-    },
-    "Color Picker (Text Color)": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "颜色选择器（文字颜色）"
-          }
-        }
-      }
-    },
-    "Drag a text box · Click text to edit · Drag box handles to resize · ⌘Return finish · Escape cancel": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "拖动创建文本框 · 点击文字进行编辑 · 拖动文本框控制柄调整大小 · ⌘Return 完成 · Escape 取消"
-          }
-        }
-      }
-    },
-    "Drag to draw a shape on a new layer · Shift %@ · Option from center · Shift-U or Tab for the next shape · Escape cancel · Space to pan": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "拖动在新图层上绘制形状 · Shift %@ · Option 从中心绘制 · Shift-U 或 Tab 切换下一个形状 · Escape 取消 · 空格键平移"
-          }
-        }
-      }
-    },
-    "Editable text layer": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "可编辑文字图层"
-          }
-        }
-      }
-    },
-    "Export PNG": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "导出 PNG"
-          }
-        }
-      }
-    },
-    "Levels": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "色阶"
-          }
-        }
-      }
-    },
-    "Select text: %@": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "选择文字：%@"
-          }
-        }
-      }
-    },
-    "Text": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "文字"
-          }
-        }
-      }
-    },
-    "This project uses format version %lld. This app supports versions 1–8.": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "此项目使用格式版本 %lld。本应用支持版本 1–8。"
-          }
-        }
-      }
-    },
-    "Type (T)": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "文字工具 (T)"
-          }
-        }
-      }
-    },
-    "line": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "直线"
+            "value": "智能选择 (W) · Tab 切换魔棒与对象模式"
           }
         }
       }

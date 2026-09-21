@@ -429,7 +429,8 @@ final class LayerTableView: NSTableView {
                 session?.selectTool(.brush)
                 session?.brushMode = key == "e" ? .erase : .paint
             }
-            else { session?.selectTool(key == "a" ? .idle : key == "i" ? .eyedropper : key == "c" ? .crop : key == "r" ? .blur : key == "b" ? .brush : key == "g" ? .gradient : key == "l" ? .lasso : key == "m" ? .marquee : key == "w" ? .wand : key == "j" ? .spotHealing : key == "s" ? .cloneStamp : key == "u" ? .shape : key == "v" ? .move : key == "h" ? .hand : .zoom) }
+            else if key == "w" { if !event.isARepeat { session?.pressWandKey() } }
+            else { session?.selectTool(key == "a" ? .idle : key == "i" ? .eyedropper : key == "c" ? .crop : key == "r" ? .blur : key == "b" ? .brush : key == "g" ? .gradient : key == "l" ? .lasso : key == "m" ? .marquee : key == "j" ? .spotHealing : key == "s" ? .cloneStamp : key == "u" ? .shape : key == "v" ? .move : key == "h" ? .hand : .zoom) }
         } else if plain, let digit = Int(event.charactersIgnoringModifiers ?? ""), session?.usesOpacityKeys == true {
             session?.typeOpacityDigit(digit)
         // With the Move tool the arrows move the layer, as on the canvas, rather than changing the row selection.
