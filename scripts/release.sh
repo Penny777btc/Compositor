@@ -1,10 +1,10 @@
 #!/bin/zsh
-# Builds a signed, notarized Compositor DMG that opens without warnings on any Mac.
+# Builds the independently signed and notarized Simplified Chinese beta DMG.
 #
 # Needs, all kept out of this repository:
 #   - a "Developer ID Application" certificate in the login keychain
 #   - notarization credentials saved once with:
-#       xcrun notarytool store-credentials "compositor-notary" --apple-id "…" --team-id 3E4X3B9Z9T
+#       xcrun notarytool store-credentials "compositor-zh-beta-notary" --apple-id "…" --team-id YY4JJY99NB
 #   - create-dmg (brew install create-dmg)
 # The DMG window background is scripts/dmg/dmg-bg.jpg (600 × 380, the window's exact size) plus
 # dmg-bg-retina.jpg (1200 × 760) for Retina displays.
@@ -12,11 +12,11 @@ set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP=Compositor
-TEAM=3E4X3B9Z9T
-IDENTITY="Developer ID Application"
-NOTARY_PROFILE=compositor-notary
+TEAM=YY4JJY99NB
+IDENTITY="Developer ID Application: PEIWEN WU (YY4JJY99NB)"
+NOTARY_PROFILE=compositor-zh-beta-notary
 # Built outside Dropbox: the extended attributes it adds to files make code signing fail.
-WORK="$HOME/Library/Caches/CompositorRelease"
+WORK="$HOME/Library/Caches/CompositorZHBetaRelease"
 DIST="$PROJECT_DIR/dist"
 
 settings=$(xcodebuild -project "$PROJECT_DIR/$APP.xcodeproj" -scheme "$APP" -configuration Release -showBuildSettings 2>/dev/null)
@@ -50,8 +50,10 @@ xcrun stapler staple "$APP_PATH"
 echo "==> Building the DMG window"
 STAGE="$WORK/dmg"
 mkdir -p "$STAGE"
-cp -R "$APP_PATH" "$STAGE/"
-DMG="$DIST/$APP-$VERSION.dmg"
+DISPLAY_APP="Compositor 中文体验版.app"
+cp -R "$APP_PATH" "$STAGE/$DISPLAY_APP"
+cp "$PROJECT_DIR/LICENSE" "$PROJECT_DIR/BETA.zh-Hans.md" "$STAGE/"
+DMG="$DIST/Compositor-ZH-Beta-$VERSION.dmg"
 rm -f "$DMG"
 # Icon centers in the DMG window, in points from its top-left.
 APP_X=160
@@ -70,10 +72,10 @@ elif [[ -f "$LOW" ]]; then
   background=(--background "$LOW")
 fi
 create-dmg \
-  --volname "$APP" \
+  --volname "Compositor 中文体验版" \
   --window-pos 200 120 --window-size 600 380 \
   --icon-size 128 --text-size 13 \
-  --icon "$APP.app" "$APP_X" "$ICON_Y" --hide-extension "$APP.app" \
+  --icon "$DISPLAY_APP" "$APP_X" "$ICON_Y" --hide-extension "$DISPLAY_APP" \
   --app-drop-link "$APPLICATIONS_X" "$ICON_Y" \
   "${background[@]}" \
   "$DMG" "$STAGE"
