@@ -1,6 +1,14 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Application display name for the independently signed Chinese beta",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Compositor Chinese Beta" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Compositor 中文体验版" } }
+      }
+    },
     "CFBundleName" : {
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
+	<key>CFBundleDisplayName</key>
+	<string>Compositor 中文体验版</string>
     <key>CFBundleDocumentTypes</key>
     <array><dict>
         <key>CFBundleTypeName</key><string>Images</string>
@@ -28,12 +30,4 @@
             <key>public.filename-extension</key><array><string>comp</string></array>
         </dict>
     </dict></array>
-    <!-- Sparkle updates: where the feed lives (permanent), the key updates are signed with, and the helper a
-         sandboxed app installs them through. -->
-    <key>SUFeedURL</key>
-    <string>https://raw.githubusercontent.com/robbietilton/Compositor/main/appcast.xml</string>
-    <key>SUPublicEDKey</key>
-    <string>KZvD724t8QpzTR4OGrHrsCWt538TJ/g/qrTZii+o214=</string>
-    <key>SUEnableInstallerLauncherService</key>
-    <true/>
 </dict></plist>
