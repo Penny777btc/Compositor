@@ -221,11 +221,7 @@ struct ContentView: View {
         }
         .fileImporter(isPresented: $session.showsImporter,
                       allowedContentTypes: [.jpeg, .png, .heic, .tiff], allowsMultipleSelection: true) { result in
-            switch result {
-            case .success(let urls): Task { await session.importImages(urls) }
-            case .failure(let error):
-                if (error as NSError).code != NSUserCancelledError { session.importError = error.localizedDescription }
-            }
+            handleImportResult(result)
         }
         .alert("Import couldn’t finish", isPresented: Binding(
             get: { session.importError != nil }, set: { if !$0 { session.importError = nil } })) {
@@ -239,6 +235,17 @@ struct ContentView: View {
             set: { if !$0 { session.cropError = nil } })) {
                 Button("OK") { session.cropError = nil }
             } message: { Text(session.cropError ?? "") }
+    }
+    private func importImages(_ urls: [URL]) {
+        Task { await session.importImages(urls) }
+    }
+    private func handleImportResult(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls): importImages(urls)
+        case .failure(let error):
+            let cocoa = error as NSError
+            if cocoa.code != NSUserCancelledError { session.importError = error.localizedDescription }
+        }
     }
     private func requestNewCanvas() {
         if let applicationDelegate { Task { await applicationDelegate.projects.newCanvas() } }
