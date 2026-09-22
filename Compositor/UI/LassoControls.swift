@@ -5,7 +5,7 @@ struct LassoControls: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(session.tool == .marquee ? "Marquee" : session.tool == .wand ? "Magic" : "Lasso").font(ToolHeaderStyle.titleFont)
+            Text(L10n.text(session.tool == .marquee ? "Marquee" : session.tool == .wand ? "Magic" : "Lasso")).font(ToolHeaderStyle.titleFont)
             if session.tool == .marquee {
                 Picker("Shape", selection: Binding(get: { session.marqueeKind }, set: { kind in
                     session.cancelLasso()
@@ -21,7 +21,7 @@ struct LassoControls: View {
                     session.cancelLasso()
                     session.wandMode = mode
                 })) {
-                    ForEach(WandMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    ForEach(WandMode.allCases, id: \.self) { Text(L10n.text($0.rawValue)).tag($0) }
                 }
                 .pickerStyle(.segmented).labelsHidden().fixedSize()
                 .help("Press Tab to switch between Wand and Object")
@@ -48,7 +48,7 @@ struct LassoControls: View {
             // Rectangles snap to whole pixels, so smoothing doesn't apply (as in Photoshop); ellipses curve.
             if session.tool == .lasso || session.tool == .wand || (session.tool == .marquee && session.marqueeKind == .ellipse) {
                 Toggle("Anti-alias", isOn: $session.selectionAntialiased)
-                    .help(session.tool == .wand && session.wandMode == .object ? "Smooth the detected object outline; turn off for the raw pixel mask" : "Smooth selection edges; turn off for hard pixel edges")
+                    .help(L10n.text(session.tool == .wand && session.wandMode == .object ? "Smooth the detected object outline; turn off for the raw pixel mask" : "Smooth selection edges; turn off for hard pixel edges"))
             }
             Divider().frame(height: 18)
             modifyControl("Expand", amount: $session.selectionExpandAmount) {
@@ -215,7 +215,7 @@ struct SelectionAmountSheet: View {
                     .multilineTextAlignment(.trailing).focused($focused)
                     .unitSuffix("px")
             }
-            Text("Enter a whole number from 1 to \(maximum) px.")
+            Text(L10n.format("Enter a whole number from 1 to %lld px.", maximum))
                 .font(.callout).foregroundStyle(.secondary)
                 .opacity(amount == nil ? 1 : 0)
             Divider()

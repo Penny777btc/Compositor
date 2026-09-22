@@ -15,9 +15,14 @@ nonisolated enum FilterKind: String, CaseIterable, Sendable {
     case exposure = "Exposure"
     case gradientMap = "Gradient Map"
     case grain = "Grain"
+    case blackWhite = "Black & White"
+    case colorBalance = "Color Balance"
     var isAutomatic: Bool { self == .contentAwareFill || self == .removeBackground }
     /// Color adjustments: in the Image menu (and editable as adjustment layers), not under Filter.
-    var isImageAdjustment: Bool { self == .curves || self == .exposure || self == .gradientMap || self == .grain }
+    var isImageAdjustment: Bool {
+        self == .curves || self == .exposure || self == .gradientMap || self == .grain
+            || self == .blackWhite || self == .colorBalance
+    }
 }
 
 /// Remove Background's two ways of working: Apple's own subject mask on its own, or that mask refined against the
@@ -48,6 +53,8 @@ nonisolated struct FilterSettings: Equatable, Sendable {
     var exposure = ExposureSettings()
     var gradientMap = GradientMapSettings()
     var grain = GrainSettings()
+    var blackWhite = BlackWhiteSettings()
+    var colorBalance = ColorBalanceSettings()
     /// Remove Background: Basic is the quick subject mask; Advanced refines it (see the three settings below).
     var backgroundQuality: BackgroundQuality = .basic
     /// Remove Background: how far the mask is pulled onto the image's own edges (0 off, in layer pixels).
@@ -130,6 +137,8 @@ nonisolated enum PixelFilter {
         case .curves: image = try settings.curves.apply(job.image)
         case .exposure: image = try settings.exposure.apply(job.image)
         case .gradientMap: image = try settings.gradientMap.apply(job.image)
+        case .blackWhite: image = try settings.blackWhite.apply(job.image)
+        case .colorBalance: image = try settings.colorBalance.apply(job.image)
         // Grain sits in layer pixels; the job's seed gives each application its own pattern.
         case .grain: image = try settings.grain.apply(job.image, unitsPerPixel: 1 / job.scale, seed: job.seed)
         case .removeBackground:

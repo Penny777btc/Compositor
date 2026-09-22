@@ -23,6 +23,35 @@ struct FilterSheet: View {
             case .gradientMap:
                 GradientMapControls(settings: Binding(get: { settings.gradientMap }, set: { new in update { $0.gradientMap = new } }),
                                     pick: { session.openGradientMapColorPicker(highlights: $0) })
+            case .blackWhite:
+                // Each slider says how bright that family of colors becomes, as Photoshop's do.
+                control("Reds", \.blackWhite.reds, range: BlackWhiteSettings.range, unit: "%", decimals: 0, logarithmic: false)
+                control("Yellows", \.blackWhite.yellows, range: BlackWhiteSettings.range, unit: "%", decimals: 0, logarithmic: false)
+                control("Greens", \.blackWhite.greens, range: BlackWhiteSettings.range, unit: "%", decimals: 0, logarithmic: false)
+                control("Cyans", \.blackWhite.cyans, range: BlackWhiteSettings.range, unit: "%", decimals: 0, logarithmic: false)
+                control("Blues", \.blackWhite.blues, range: BlackWhiteSettings.range, unit: "%", decimals: 0, logarithmic: false)
+                control("Magentas", \.blackWhite.magentas, range: BlackWhiteSettings.range, unit: "%", decimals: 0, logarithmic: false)
+                Toggle("Tint", isOn: flag(\.blackWhite.tint))
+                    .help("Color the result while keeping its tones, for a sepia or a cyanotype")
+                if settings.blackWhite.tint {
+                    control("Hue", \.blackWhite.tintHue, range: 0...360, unit: "°", decimals: 0, logarithmic: false)
+                    control("Saturation", \.blackWhite.tintSaturation, range: 0...100, unit: "%", decimals: 0, logarithmic: false)
+                }
+            case .colorBalance:
+                Text("Shadows").font(.headline)
+                control("Cyan / Red", \.colorBalance.shadowCyanRed, range: ColorBalanceSettings.range, unit: "", decimals: 0, logarithmic: false)
+                control("Magenta / Green", \.colorBalance.shadowMagentaGreen, range: ColorBalanceSettings.range, unit: "", decimals: 0, logarithmic: false)
+                control("Yellow / Blue", \.colorBalance.shadowYellowBlue, range: ColorBalanceSettings.range, unit: "", decimals: 0, logarithmic: false)
+                Text("Midtones").font(.headline)
+                control("Cyan / Red", \.colorBalance.midCyanRed, range: ColorBalanceSettings.range, unit: "", decimals: 0, logarithmic: false)
+                control("Magenta / Green", \.colorBalance.midMagentaGreen, range: ColorBalanceSettings.range, unit: "", decimals: 0, logarithmic: false)
+                control("Yellow / Blue", \.colorBalance.midYellowBlue, range: ColorBalanceSettings.range, unit: "", decimals: 0, logarithmic: false)
+                Text("Highlights").font(.headline)
+                control("Cyan / Red", \.colorBalance.highlightCyanRed, range: ColorBalanceSettings.range, unit: "", decimals: 0, logarithmic: false)
+                control("Magenta / Green", \.colorBalance.highlightMagentaGreen, range: ColorBalanceSettings.range, unit: "", decimals: 0, logarithmic: false)
+                control("Yellow / Blue", \.colorBalance.highlightYellowBlue, range: ColorBalanceSettings.range, unit: "", decimals: 0, logarithmic: false)
+                Toggle("Preserve Luminosity", isOn: flag(\.colorBalance.preserveLuminosity))
+                    .help("Put each pixel's brightness back afterwards, so only the color moves")
             case .grain:
                 control("Amount", \.grain.amount, range: GrainSettings.amountRange, unit: "", decimals: 0, logarithmic: false)
                 control("Size", \.grain.size, range: GrainSettings.sizeRange, unit: "px", decimals: 1, logarithmic: true)
@@ -81,7 +110,7 @@ struct FilterSheet: View {
                 // the panel says what it is waiting for rather than showing a disabled button and nothing else.
                 if edit?.committing == true || edit?.preparing == true {
                     ProgressView().controlSize(.small)
-                    Text(edit?.committing == true ? "Applying…" : "Working…")
+                    Text(L10n.text(edit?.committing == true ? "Applying…" : "Working…"))
                         .font(.callout).foregroundStyle(.secondary)
                 }
                 Button("OK") { Task { await session.commitFilter() } }
@@ -105,11 +134,11 @@ struct FilterSheet: View {
                          unit: String, decimals: Int, logarithmic: Bool) -> some View {
         let step = pow(10, Double(decimals))
         return HStack(spacing: 10) {
-            Text(title).frame(minWidth: 60, alignment: .leading).fixedSize()
+            Text(L10n.text(title)).frame(minWidth: 60, alignment: .leading).fixedSize()
             Slider(value: Binding(get: { logarithmic ? log(settings[keyPath: key]) : settings[keyPath: key] },
                                   set: { value in update { $0[keyPath: key] = ((logarithmic ? exp(value) : value) * step).rounded() / step } }),
                    in: logarithmic ? log(range.lowerBound)...log(range.upperBound) : range)
-            TextField(title, value: Binding(get: { settings[keyPath: key] }, set: { value in update { $0[keyPath: key] = value } }),
+            TextField(L10n.text(title), value: Binding(get: { settings[keyPath: key] }, set: { value in update { $0[keyPath: key] = value } }),
                       format: .number.precision(.fractionLength(0...decimals)))
                 .frame(width: 56).textFieldStyle(.roundedBorder).multilineTextAlignment(.trailing)
                 .unitSuffix(unit)
@@ -155,9 +184,9 @@ struct GradientMapControls: View {
                     .contentShape(shape)
             }
             .buttonStyle(.plain)
-            .help("Choose the \(title.lowercased()) color")
-            .accessibilityLabel("\(title) color")
-            Text(title)
+            .help(L10n.format("Choose the %@ color", L10n.text(title)))
+            .accessibilityLabel(L10n.format("%@ color", L10n.text(title)))
+            Text(L10n.text(title))
         }
     }
 }

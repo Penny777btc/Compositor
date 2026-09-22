@@ -4,6 +4,8 @@ import CoreImage
 nonisolated enum AdjustmentKind: String, Codable, CaseIterable, Sendable {
     case hsv = "Hue/Saturation", levels = "Levels", curves = "Curves"
     case exposure = "Exposure", gradientMap = "Gradient Map", grain = "Grain"
+    case invert = "Invert"
+    case blackWhite = "Black & White", colorBalance = "Color Balance"
     var symbol: String {
         switch self {
         case .curves: return "point.topleft.down.to.point.bottomright.curvepath"
@@ -12,16 +14,24 @@ nonisolated enum AdjustmentKind: String, Codable, CaseIterable, Sendable {
         case .exposure: return "plusminus.circle"
         case .gradientMap: return "paintpalette"
         case .grain: return "circle.grid.3x3"
+        case .invert: return "circle.righthalf.filled"
+        case .blackWhite: return "circle.filled.pattern.diagonalline.rectangle"
+        case .colorBalance: return "scale.3d"
         }
     }
     /// The filter panel that edits this kind; Levels and Hue/Saturation have panels of their own.
+    /// Every kind but Invert opens an editor when its layer is double-clicked.
+    var isEditable: Bool { self != .invert }
     var filterKind: FilterKind? {
         switch self {
         case .curves: return .curves
+        case .blackWhite: return .blackWhite
+        case .colorBalance: return .colorBalance
         case .exposure: return .exposure
         case .gradientMap: return .gradientMap
         case .grain: return .grain
-        case .hsv, .levels: return nil
+        // Hue/Saturation and Levels have panels of their own; Invert has nothing to set.
+        case .hsv, .levels, .invert: return nil
         }
     }
 }
@@ -42,6 +52,8 @@ nonisolated struct LayerAdjustment: Codable, Equatable, Sendable {
     var exposureSettings: ExposureSettings?
     var gradientMapSettings: GradientMapSettings?
     var grainSettings: GrainSettings?
+    var blackWhiteSettings: BlackWhiteSettings?
+    var colorBalanceSettings: ColorBalanceSettings?
     var exposure: ExposureSettings {
         get { exposureSettings ?? ExposureSettings() }
         set { exposureSettings = newValue }
@@ -54,6 +66,14 @@ nonisolated struct LayerAdjustment: Codable, Equatable, Sendable {
         get { grainSettings ?? GrainSettings() }
         set { grainSettings = newValue }
     }
+    var blackWhite: BlackWhiteSettings {
+        get { blackWhiteSettings ?? BlackWhiteSettings() }
+        set { blackWhiteSettings = newValue }
+    }
+    var colorBalance: ColorBalanceSettings {
+        get { colorBalanceSettings ?? ColorBalanceSettings() }
+        set { colorBalanceSettings = newValue }
+    }
     var isValid: Bool {
         hue.isFinite && saturation.isFinite && lightness.isFinite && abs(hue) <= 360 && abs(saturation) <= 100 && abs(lightness) <= 100
         && resolvedHSV.adjustments.values.allSatisfy {
@@ -62,7 +82,7 @@ nonisolated struct LayerAdjustment: Codable, Equatable, Sendable {
         }
         && resolvedHSV.bands.values.allSatisfy { $0.handles.allSatisfy { $0.isFinite } }
         && levels.ranges.count == 4 && levels.ranges.allSatisfy { $0 == $0.normalized } && curves.isValid
-        && exposure.isValid && gradientMap.isValid && grain.isValid
+        && exposure.isValid && gradientMap.isValid && grain.isValid && blackWhite.isValid && colorBalance.isValid
     }
     /// `region` is the part of the document `image` covers (the whole image at one unit per pixel when
     /// omitted), so Grain's pattern stays fixed in the document however the canvas splits its drawing.
@@ -74,11 +94,16 @@ nonisolated struct LayerAdjustment: Codable, Equatable, Sendable {
                 selection: nil, pixelToDocument: .identity, thumbnail: false)).image
         case .levels: return try LevelsFilter.run(LevelsJob(image: image, settings: levels, selection: nil, mapping: .identity))
         case .curves: return try curves.apply(image)
+        case .blackWhite: return try blackWhite.apply(image)
+        case .colorBalance: return try colorBalance.apply(image)
         case .exposure: return try exposure.apply(image)
         case .gradientMap: return try gradientMap.apply(image)
         case .grain:
             let region = region ?? CGRect(x: 0, y: 0, width: image.width, height: image.height)
             return try grain.apply(image, origin: region.origin, unitsPerPixel: region.width / CGFloat(max(1, image.width)))
+        case .invert:
+            return try PixelInvert.run(PixelInvert.Job(image: image, isMask: false,
+                                                       pixelToDocument: .identity, selection: nil))
         }
     }
 }
@@ -102,7 +127,8 @@ extension EditorSession {
         if let parent = layer.parentID { collapsedGroupIDs.remove(parent) }
         activeLayerID = layer.id
         endEdit()
-        adjustmentEditingID = layer.id
+        // Invert has nothing to set, so the new layer just applies rather than opening an editor.
+        if kind.isEditable { adjustmentEditingID = layer.id }
     }
     func updateAdjustment(_ id: UUID, value: LayerAdjustment) {
         guard let index = document?.layers.firstIndex(where: { $0.id == id }), value.isValid else { return }

@@ -54,7 +54,7 @@ actor ImageExporter {
                 }
                 let mode = layer.blendMode ?? .normal
                 // Core Graphics blends these two wrong; see SeparableBlend.
-                if SeparableBlend.isCoreGraphicsWrong(mode), SeparableBlend.draw(mode, in: target, body: { drawLayer(.normal, $0) }) { return }
+                if SeparableBlend.needsSurface(mode), SeparableBlend.draw(mode, in: target, body: { drawLayer(.normal, $0) }) { return }
                 drawLayer(mode, target)
             }
             live.adjustment = { records[$0]?.adjustment }

@@ -143,7 +143,7 @@ struct NativeLayerList: NSViewRepresentable {
             let cell = table.view(atColumn: 0, row: table.clickedRow, makeIfNecessary: false) as? LayerCell
             if cell?.isOnControl(point) == true {
                 if rows[table.clickedRow].liveText != nil { session.editActiveText(); return }
-                if rows[table.clickedRow].adjustment != nil { session.adjustmentEditingID = id; return }
+                if rows[table.clickedRow].adjustment?.kind.isEditable == true { session.adjustmentEditingID = id; return }
             }
             session.renamingLayerID = id
         }
@@ -198,9 +198,22 @@ struct NativeLayerList: NSViewRepresentable {
             let ids = draggedLayers(info)
             guard !ids.isEmpty else { return false }
             let copying = info.draggingSourceOperationMask == .copy
+            let intoFolder = dropOperation == .on && rows.indices.contains(row) && rows[row].isGroup
+            return place(ids, at: row, intoFolder: intoFolder, copying: copying)
+        }
+        /// Reorders one layer to the row a drop above it would use: the list's own move, without the dragging
+        /// plumbing, so anything that picks a row by itself — a test, a keyboard command — can reach it.
+        @discardableResult func moveLayer(_ id: UUID, to row: Int) -> Bool {
+            // `session.placeLayer` already refuses an unknown layer and a session that cannot edit layers, so the
+            // only thing left to reject is a row that is not a drop target. `place` treats a row past the end as
+            // the bottom, so what this actually catches is a negative one; the bound is written the way
+            // `validateDrop` writes it, so the two accept the same rows.
+            guard (0...rows.count).contains(row) else { return false }
+            return place([id], at: row, intoFolder: false, copying: false)
+        }
+        private func place(_ ids: [UUID], at row: Int, intoFolder: Bool, copying: Bool) -> Bool {
             // Where the drop lands is worked out once: each layer placed shifts the rows beneath it.
             let current = session.layerRows
-            let intoFolder = dropOperation == .on && rows.indices.contains(row) && rows[row].isGroup
             let parent: UUID?, above: UUID?, atBottom: Bool
             if intoFolder {
                 parent = rows[row].id; above = nil; atBottom = false
@@ -461,7 +474,7 @@ private final class LayerCell: NSTableCellView, NSTextFieldDelegate {
     private var maskGap: NSLayoutConstraint!
     /// The chain symbol runs corner to corner; turned 45° counterclockwise it stands upright in a narrow gap.
     private static let linkImage: NSImage? = {
-        guard let symbol = NSImage(systemSymbolName: "link", accessibilityDescription: "Linked")?
+        guard let symbol = NSImage(systemSymbolName: "link", accessibilityDescription: L10n.text("Linked"))?
             .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 10, weight: .medium)) else { return nil }
         let side = max(symbol.size.width, symbol.size.height)
         let image = NSImage(size: NSSize(width: ceil(side * 0.7), height: ceil(side * 1.45)), flipped: false) { rect in
@@ -804,7 +817,7 @@ private final class LayerCell: NSTableCellView, NSTextFieldDelegate {
     private static var adjustmentIcons: [String: NSImage] = [:]
     /// The folder symbol at 80% of the size it would fill the thumbnail slot with.
     private static let folderIcon: NSImage? = {
-        guard let symbol = NSImage(systemSymbolName: "folder", accessibilityDescription: "Folder") else { return nil }
+        guard let symbol = NSImage(systemSymbolName: "folder", accessibilityDescription: L10n.text("Folder")) else { return nil }
         let fit = 36 * 0.8 / max(symbol.size.width, symbol.size.height)
         let size = NSSize(width: symbol.size.width * fit, height: symbol.size.height * fit)
         let icon = NSImage(size: NSSize(width: 36, height: 36), flipped: false) { bounds in
@@ -812,12 +825,12 @@ private final class LayerCell: NSTableCellView, NSTextFieldDelegate {
             return true
         }
         icon.isTemplate = true
-        icon.accessibilityDescription = "Folder"
+        icon.accessibilityDescription = L10n.text("Folder")
         return icon
     }()
     private static func adjustmentIcon(_ symbolName: String, description: String, quarterTurnClockwise: Bool = false) -> NSImage? {
         if let icon = adjustmentIcons[symbolName] { return icon }
-        guard let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: description) else { return nil }
+        guard let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: L10n.text(description)) else { return nil }
         let size = NSSize(width: symbol.size.width * 1.21, height: symbol.size.height * 1.21)
         let icon = NSImage(size: NSSize(width: 36, height: 36), flipped: false) { bounds in
             let transform = NSAffineTransform()
@@ -829,7 +842,7 @@ private final class LayerCell: NSTableCellView, NSTextFieldDelegate {
             return true
         }
         icon.isTemplate = true
-        icon.accessibilityDescription = description
+        icon.accessibilityDescription = L10n.text(description)
         adjustmentIcons[symbolName] = icon
         return icon
     }
@@ -845,7 +858,7 @@ private final class LayerEffectRow: NSView, NSDraggingSource {
     private let label: NSTextField
     init(session: EditorSession, layerID: UUID, kind: LayerEffectKind, enabled: Bool, indent: CGFloat) {
         self.session = session; self.layerID = layerID; self.kind = kind
-        label = NSTextField(labelWithString: kind.rawValue)
+        label = NSTextField(labelWithString: L10n.text(kind.rawValue))
         super.init(frame: .zero)
         wantsLayer = true
         translatesAutoresizingMaskIntoConstraints = false
@@ -856,7 +869,7 @@ private final class LayerEffectRow: NSView, NSDraggingSource {
         eye.contentTintColor = .secondaryLabelColor
         eye.target = self; eye.action = #selector(toggle)
         eye.isEnabled = session.canEditLayers
-        eye.setAccessibilityLabel((enabled ? "Hide " : "Show ") + kind.rawValue)
+        eye.setAccessibilityLabel(L10n.format(enabled ? "Hide %@" : "Show %@", L10n.text(kind.rawValue)))
         label.font = .systemFont(ofSize: 11)
         label.textColor = enabled ? .labelColor : .secondaryLabelColor
         label.lineBreakMode = .byTruncatingTail
@@ -869,10 +882,10 @@ private final class LayerEffectRow: NSView, NSDraggingSource {
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
             label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8)
         ])
-        toolTip = "Click to select; double-click to edit; Option-drag to copy " + kind.rawValue.lowercased()
+        toolTip = L10n.format("Click to select; double-click to edit; Option-drag to copy %@", L10n.text(kind.rawValue))
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
-        setAccessibilityLabel(kind.rawValue + " effect")
+        setAccessibilityLabel(L10n.format("%@ effect", L10n.text(kind.rawValue)))
         updateSelection()
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }

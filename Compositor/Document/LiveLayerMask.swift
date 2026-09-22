@@ -180,7 +180,7 @@ extension EditorSession {
             }
             let mode = self.displayedBlendMode(for: layer)
             // Core Graphics blends these two wrong; see SeparableBlend.
-            if SeparableBlend.isCoreGraphicsWrong(mode), SeparableBlend.draw(mode, in: ctx, body: { drawLayer(.normal, $0) }) { return }
+            if SeparableBlend.needsSurface(mode), SeparableBlend.draw(mode, in: ctx, body: { drawLayer(.normal, $0) }) { return }
             drawLayer(mode, ctx)
         }
         live.adjustment = { records[$0]?.adjustment }

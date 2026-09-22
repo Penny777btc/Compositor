@@ -6,20 +6,32 @@ struct BlendModePicker: NSViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator(session: session) }
     func makeNSView(context: Context) -> NSPopUpButton {
         let button = NSPopUpButton(frame: .zero, pullsDown: false)
-        button.addItems(withTitles: LayerBlendMode.allCases.map { L10n.text($0.rawValue) })
+        Self.populateMenu(button)
         button.menu?.delegate = context.coordinator
         button.target = context.coordinator
         button.action = #selector(Coordinator.choose(_:))
         button.setAccessibilityLabel(L10n.text("Blend mode"))
-        // A capsule like the SwiftUI buttons and menus (`roundedControls`), which don't reach this AppKit pop-up.
+        // Match the capsule appearance of the SwiftUI controls.
         button.borderShape = .capsule
         return button
+    }
+    static func populateMenu(_ button: NSPopUpButton) {
+        button.removeAllItems()
+        // Grouped as Photoshop groups them — darkening, lightening, contrast, comparative, component —
+        // with a line between, so a long list stays readable.
+        for (index, group) in LayerBlendMode.groups.enumerated() {
+            if index > 0 { button.menu?.addItem(.separator()) }
+            for mode in group {
+                button.addItem(withTitle: L10n.text(mode.rawValue))
+                button.lastItem?.representedObject = mode.rawValue
+            }
+        }
     }
     func updateNSView(_ button: NSPopUpButton, context: Context) {
         button.isEnabled = session.canEditAppearance
         if !context.coordinator.tracking {
             let mode = session.activeLayer?.blendMode ?? .normal
-            button.selectItem(at: LayerBlendMode.allCases.firstIndex(of: mode) ?? 0)
+            button.select(button.itemArray.first { ($0.representedObject as? String) == mode.rawValue })
         }
     }
     static func dismantleNSView(_ button: NSPopUpButton, coordinator: Coordinator) {
@@ -42,9 +54,7 @@ struct BlendModePicker: NSViewRepresentable {
             // Keep the last preview alive until the selection action has committed so
             // the canvas never flashes back to the layer's previous mode.
             guard let item else { return }
-            let index = menu.index(of: item)
-            guard LayerBlendMode.allCases.indices.contains(index) else { return }
-            let mode = LayerBlendMode.allCases[index]
+            guard let raw = item.representedObject as? String, let mode = LayerBlendMode(rawValue: raw) else { return }
             highlightedMode = mode
             session.previewBlendMode(mode, for: layerID)
         }
@@ -60,10 +70,9 @@ struct BlendModePicker: NSViewRepresentable {
         }
         @objc func choose(_ button: NSPopUpButton) {
             guard session.activeLayerID == layerID,
-                  let mode = highlightedMode ?? (LayerBlendMode.allCases.indices.contains(button.indexOfSelectedItem)
-                      ? LayerBlendMode.allCases[button.indexOfSelectedItem] : nil) else { return }
+                  let mode = highlightedMode ?? (button.selectedItem?.representedObject as? String).flatMap(LayerBlendMode.init(rawValue:)) else { return }
             session.setLayerBlendMode(mode)
-            button.selectItem(at: LayerBlendMode.allCases.firstIndex(of: mode) ?? 0)
+            button.select(button.itemArray.first { ($0.representedObject as? String) == mode.rawValue })
             highlightedMode = nil
             session.refreshCanvasPreview?()
         }

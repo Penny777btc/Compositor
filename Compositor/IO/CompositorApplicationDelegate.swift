@@ -1,14 +1,18 @@
 import AppKit
-import Sparkle
 
 final class CompositorApplicationDelegate: NSObject, NSApplicationDelegate {
     let workspace = ProjectWorkspace()
     var session: EditorSession { workspace.current.session }
     var projects: ProjectController { workspace.current.controller }
     var showEditor: (() -> Void)?
-    /// Checks the update feed and installs new versions (Sparkle). Started only after launch: its first-run prompt,
-    /// shown during launch, kept the editor window from ever opening.
-    let updater = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
+    /// This unofficial fork checks its own releases and never invokes the upstream binary updater.
+    lazy var forkUpdates = ForkUpdateChecker { [weak self] in
+        guard let self else { return false }
+        return self.workspace.window?.isVisible == true && self.workspace.canSwitch
+            && self.session.effectsEditing == nil && self.session.transformEdit == nil
+            && self.session.cropRect == nil && self.session.lassoDraft == nil && self.session.shapeDraft == nil
+            && !self.session.showsRawDevelop
+    }
 
     // Finder Open With and Dock drops, including files delivered during launch.
     func application(_ application: NSApplication, open urls: [URL]) {
@@ -27,8 +31,12 @@ final class CompositorApplicationDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [updater] in updater.startUpdater() }
+        forkUpdates.start()
     }
+
+    func applicationDidBecomeActive(_ notification: Notification) { forkUpdates.applicationDidBecomeActive() }
+
+    func applicationWillTerminate(_ notification: Notification) { forkUpdates.stop() }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag { showEditor?() }

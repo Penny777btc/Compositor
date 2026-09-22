@@ -23,6 +23,7 @@ extension EditorSession {
             let asset = ImportedImage(image: raster.image, thumbnail: try PixelAdjust.thumbnail(of: raster.image), name: "Adjustment input")
             let layer = ImageLayer(asset: asset, origin: .zero)
             switch original.kind {
+            case .invert: break
             case .levels:
                 let edit = try LevelsEdit(layer: layer, selection: nil)
                 edit.settings = original.levels
@@ -38,12 +39,14 @@ extension EditorSession {
                 let edit = try HueSaturationEdit(layerID: layer.id, original: asset, selection: nil, transform: layer.transform)
                 edit.settings = original.resolvedHSV
                 hueSaturation = edit
-            case .curves, .exposure, .gradientMap, .grain:
+            case .curves, .exposure, .gradientMap, .grain, .blackWhite, .colorBalance:
                 var settings = FilterSettings()
                 settings.curves = original.curves
                 settings.exposure = original.exposure
                 settings.gradientMap = original.gradientMap
                 settings.grain = original.grain
+                settings.blackWhite = original.blackWhite
+                settings.colorBalance = original.colorBalance
                 filterEdit = try FilterEdit(kind: original.kind.filterKind ?? .curves, layer: layer, selection: nil, settings: settings)
             }
             adjustmentOriginal = original
@@ -58,18 +61,22 @@ extension EditorSession {
     private var editedAdjustment: LayerAdjustment? {
         guard var value = adjustmentOriginal else { return nil }
         switch value.kind {
+        // Nothing to carry back: Invert has no settings.
+        case .invert: break
         case .levels:
             guard let levels else { return nil }
             value.levels = levels.settings
         case .hsv:
             guard let hueSaturation else { return nil }
             value.hsvSettings = hueSaturation.settings
-        case .curves, .exposure, .gradientMap, .grain:
+        case .curves, .exposure, .gradientMap, .grain, .blackWhite, .colorBalance:
             guard let filterEdit else { return nil }
             switch value.kind {
             case .exposure: value.exposure = filterEdit.settings.exposure
             case .gradientMap: value.gradientMap = filterEdit.settings.gradientMap
             case .grain: value.grain = filterEdit.settings.grain
+            case .blackWhite: value.blackWhite = filterEdit.settings.blackWhite
+            case .colorBalance: value.colorBalance = filterEdit.settings.colorBalance
             default: value.curves = filterEdit.settings.curves
             }
         }

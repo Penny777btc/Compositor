@@ -1,5 +1,13 @@
 # Compositor
 
+> **非官方简体中文 Fork / Unofficial Simplified Chinese fork**
+>
+> 当前中文体验版 **1.2.2.1** 基于官方 **v1.2.2**，要求 **macOS 26.5+**。
+> [下载中文体验版](https://github.com/Penny777btc/Compositor/releases/tag/zh-beta-v1.2.2.1) · [中文安装与更新说明](BETA.zh-Hans.md)
+>
+> 本发行分支不包含实验性 AI 助手。新版支持本 Fork 的更新提醒（不自动安装）；旧版用户需要先手动升级一次。
+> 原作者暂不接受本地化合并，因此在本 Fork 独立维护；以下保留原项目介绍。
+
 Adobe Photoshop costs too much and tools like GIMP don’t feel familiar enough for me to stay in flow. That’s why I built Compositor.
 
 The goal was to create a full-featured image editor that is completely free and open source. I use Photoshop for compositing and post-processing, so Compositor is built around that workflow - with the tools needed to create a pixel-perfect final image.
@@ -9,10 +17,11 @@ Because it’s open source, you can download the Xcode project and add, remove, 
 ## Features
 
 ### Layers
-- Layers and folders, with blend modes and opacity
+- Layers and folders, with blend modes and opacity — a folder's opacity dims everything inside it
 - Layer masks: paint, fill, invert, blur and feather them; link or unlink them to transform a mask on its own
 - Clipping masks and folder masks
 - Adjustment layers: Hue/Saturation, Levels, Curves, Exposure, Gradient Map and Grain
+- Layer effects: Stroke, Drop Shadow, Color Overlay, Inner Shadow and Outer Glow, rendered on the GPU and editable at any time
 - Merge Down, Merge Layers and Merge Group (⌘E)
 - Duplicate, rename inline, reorder and nest by drag and drop; Option-drag to duplicate
 - Drag layers between open projects
@@ -26,17 +35,18 @@ Because it’s open source, you can download the Xcode project and add, remove, 
 - Flip Layer and Flip Canvas, horizontal and vertical
 
 ### Selections
-- Rectangle and Ellipse Marquee, Freehand and Polygonal Lasso, and Magic Wand
+- Rectangle and Ellipse Marquee, Freehand and Polygonal Lasso, and the Magic tool — Wand selects by color, Object traces whatever you click (Tab switches)
+- Select Subject, and Expand, Contract and Feather on any selection
 - Add to and subtract from selections, move the outline, or move and duplicate the pixels inside
 - Load a layer's pixels or a mask as a selection
 - Content-Aware Fill, which can also extend an image past its edges
 
 ### Painting and retouching
-- Brush with size, hardness and opacity, and Shift for straight lines
+- Brush with size, hardness, opacity and smoothing, in Paint or Erase mode (B and E), and Shift for straight lines
 - Spot Healing Brush (content-aware)
 - Clone Stamp, aligned or not, sampling one layer or all of them
 - Blur tool, on pixels or masks
-- Gradient tool and Shape tool (rectangles, rounded rectangles and ellipses)
+- Gradient tool and Shape tool (rectangles, rounded rectangles, ellipses and lines), which stay editable rather than being rasterized
 - Type tool (T): inline multiline editing in draggable, resizable paragraph boxes; font, size, color, alignment and spacing in the tool header; transform text and use it as a clipping mask
 - Eyedropper and a full color picker
 
@@ -48,17 +58,19 @@ Because it’s open source, you can download the Xcode project and add, remove, 
 
 ### Canvas and files
 - Multiple projects in tabs
+- Rulers (⌘R), guides dragged from them, a layout grid, and Snap To for guides, grid, layers and document bounds
 - Crop with snapping, and Option for symmetric cropping
 - Canvas Size and Image Size
 - Sharp high-quality downsampling when zoomed out, and a pixel grid when zoomed in
-- Import JPEG, PNG, HEIC and TIFF — including dropped screenshots and images from other apps
+- Import JPEG, PNG, HEIC, TIFF and Photoshop PSD (8-bit RGB only; not PSB or CMYK). PSD folders, masks, a subset of blend modes, and fill rectangles/ellipses stay editable; text and other vectors become pixels. A conversion report is shown before anything is applied.
 - Export JPEG with a live preview (⇧⌥⌘S); Copy Merged
-- Photoshop-style keyboard shortcuts throughout
+- Photoshop-style keyboard shortcuts throughout, remappable in Edit > Keyboard Shortcuts
+- Automatic updates, signed and notarized
 
 ## Requirements
 
-- macOS 26
-- Xcode 26 (to build from source)
+- macOS 26.5
+- Xcode 26 or later (to build from source)
 
 ## Building
 

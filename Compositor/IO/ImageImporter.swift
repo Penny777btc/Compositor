@@ -17,7 +17,7 @@ nonisolated enum ImageImportError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unreadable: L10n.text("The image could not be read. It may be damaged or unavailable.")
-        case .unsupported: L10n.text("Choose a JPEG, PNG, HEIC, or TIFF image.")
+        case .unsupported: L10n.text("Choose a supported image, RAW, or Photoshop (PSD) file.")
         case .tooLarge: L10n.text("This import exceeds the current 100-megapixel document budget or 30,000-pixel side limit.")
         }
     }
@@ -59,5 +59,13 @@ actor ImageImporter {
             }
             return ImportedImage(image: image, thumbnail: thumbnail, name: url.deletingPathExtension().lastPathComponent)
         }
+    }
+
+    func loadPhotoshop(_ url: URL, remainingPixels: Int = 100_000_000) throws -> PSDDocument {
+        try PSDReader.read(from: url, remainingPixels: remainingPixels)
+    }
+
+    func photoshopAssets(_ document: PSDDocument) throws -> [UUID: ImportedImage] {
+        try PSDDocumentBuilder.assets(from: document)
     }
 }
