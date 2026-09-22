@@ -97,7 +97,7 @@ struct CanvasSizeSheet: View {
                 }.padding(.top, 28)
             }
             Picker("Canvas extension", selection: $extensionChoice) {
-                ForEach(["Transparent", "Foreground", "Background", "Black", "White", "Custom"], id: \.self) { Text($0) }
+                ForEach(["Transparent", "Foreground", "Background", "Black", "White", "Custom"], id: \.self) { Text(L10n.text($0)).tag($0) }
             }
             if extensionChoice == "Custom" {
                 ColorPicker("Extension color", selection: $customColor, supportsOpacity: false)

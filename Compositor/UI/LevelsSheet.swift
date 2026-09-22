@@ -49,12 +49,13 @@ struct LevelsSheet: View {
                         edit?.sampleMode = edit?.sampleMode == mode ? nil : mode
                         session.brushRevision += 1
                     } label: {
-                        Label(mode.rawValue, systemImage: "eyedropper")
+                        Label(L10n.text(mode.rawValue), systemImage: "eyedropper")
                     }.tint(edit?.sampleMode == mode ? .accentColor : .secondary)
                 }
             }
             if let mode = edit?.sampleMode {
-                Text("Click the original layer to set \(mode.rawValue.lowercased()). Click the eyedropper again to stop.")
+                Text(L10n.format("Click the original layer to set %@. Click the eyedropper again to stop.",
+                                 L10n.text(mode.rawValue).lowercased()))
                     .font(.caption).foregroundStyle(.secondary)
             }
             VStack(alignment: .leading, spacing: 6) {
@@ -72,7 +73,7 @@ struct LevelsSheet: View {
                 Spacer()
                 Button("Reset") { edit?.sampleMode = nil; update { $0 = LevelsSettings() } }
             }
-            Text(session.adjustmentOriginal != nil ? "Underlying pixels · alpha-weighted histogram" : session.selection == nil ? "Original pixels · alpha-weighted histogram" : "Original pixels · selection and alpha-weighted histogram")
+            Text(L10n.text(session.adjustmentOriginal != nil ? "Underlying pixels · alpha-weighted histogram" : session.selection == nil ? "Original pixels · alpha-weighted histogram" : "Original pixels · selection and alpha-weighted histogram"))
                 .font(.caption).foregroundStyle(.secondary)
             Divider()
             HStack {
@@ -88,8 +89,8 @@ struct LevelsSheet: View {
     }
     private func field(_ name: String, _ binding: Binding<Double>, decimals: Int) -> some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(name).font(.caption).foregroundStyle(.secondary)
-            TextField(name, value: binding, format: .number.precision(.fractionLength(decimals)))
+            Text(L10n.text(name)).font(.caption).foregroundStyle(.secondary)
+            TextField(L10n.text(name), value: binding, format: .number.precision(.fractionLength(decimals)))
                 .textFieldStyle(.roundedBorder).multilineTextAlignment(.trailing).frame(width: 80)
                 .accessibilityIdentifier("levels\(name.replacingOccurrences(of: " ", with: ""))")
         }
@@ -107,7 +108,7 @@ struct LevelsSheet: View {
             }
             let color: Color = switch settings.channel { case .rgb: .gray; case .red: .red; case .green: .green; case .blue: .blue }
             context.fill(path, with: .color(color))
-        }.accessibilityLabel("Original \(settings.channel.rawValue) histogram")
+        }.accessibilityLabel(L10n.format("Original %@ histogram", L10n.text(settings.channel.rawValue)))
         .help("Linear histogram with automatic vertical scaling. Tall spikes may extend beyond the graph; all tones from 0 to 255 remain included.")
     }
     private func handles(output: Bool) -> some View {
@@ -137,7 +138,7 @@ struct LevelsSheet: View {
                                 $0.current = range
                             }
                         })
-                    .accessibilityLabel(names[index])
+                    .accessibilityLabel(L10n.text(names[index]))
             }
         }.coordinateSpace(name: output ? "levelsOutput" : "levelsInput")
     }
